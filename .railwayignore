@@ -1,0 +1,52 @@
+# Files to exclude from Railway deployment
+
+**pycache**/
+_.pyc
+_.pyo
+_.pyd
+.Python
+_.so
+\*.log
+
+# Development files
+
+.vscode/
+.idea/
+_.swp
+_.swo
+
+# Test files
+
+test*api_quick.py
+scratch*_.py
+debug\__.py
+
+# Local environment (use Railway environment variables instead)
+
+.env
+
+# Test audio samples (don't upload to production)
+
+audio_samples/
+test_audio/
+_.wav
+_.mp3
+\*.m4a
+
+# Git
+
+.git/
+.gitignore
+
+# Documentation that's not needed in production
+
+DEPLOYMENT.md
+README.md
+
+# Training script (not needed in production API)
+
+train.py
+
+# Cache
+
+.cache/
