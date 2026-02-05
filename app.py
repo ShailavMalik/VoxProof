@@ -18,20 +18,55 @@ from pydantic import BaseModel, Field, field_validator
 # Load environment variables
 load_dotenv()
 
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    handlers=[
-        logging.StreamHandler(sys.stdout)
-    ]
-)
+# Detect Railway/production environment
+IS_PRODUCTION = os.getenv("RAILWAY_ENVIRONMENT") is not None or os.getenv("PRODUCTION") == "true"
+
+# Configure logging based on environment
+if IS_PRODUCTION:
+    # Structured JSON logging for Railway
+    import json
+    
+    class JSONFormatter(logging.Formatter):
+        def format(self, record):
+            log_obj = {
+                "timestamp": self.formatTime(record),
+                "level": record.levelname,
+                "service": "voxproof",
+                "message": record.getMessage(),
+            }
+            if record.exc_info:
+                log_obj["exception"] = self.formatException(record.exc_info)
+            if hasattr(record, "request_id"):
+                log_obj["request_id"] = record.request_id
+            if hasattr(record, "duration_ms"):
+                log_obj["duration_ms"] = record.duration_ms
+            return json.dumps(log_obj)
+    
+    handler = logging.StreamHandler(sys.stdout)
+    handler.setFormatter(JSONFormatter())
+    logging.basicConfig(
+        level=logging.INFO,
+        handlers=[handler]
+    )
+else:
+    # Human-readable logging for development
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+        handlers=[
+            logging.StreamHandler(sys.stdout)
+        ]
+    )
+
 logger = logging.getLogger(__name__)
+
+# Log startup mode
+logger.info(f"Starting VoxProof API in {'PRODUCTION' if IS_PRODUCTION else 'DEVELOPMENT'} mode")
 
 # Reduce noise from external libraries
 logging.getLogger("httpx").setLevel(logging.WARNING)
-logging.getLogger("huggingface_hub").setLevel(logging.ERROR)  # Changed to ERROR
-logging.getLogger("transformers").setLevel(logging.ERROR)  # Changed to ERROR
+logging.getLogger("huggingface_hub").setLevel(logging.ERROR)
+logging.getLogger("transformers").setLevel(logging.ERROR)
 logging.getLogger("urllib3").setLevel(logging.WARNING)
 logging.getLogger("filelock").setLevel(logging.WARNING)
 
@@ -73,6 +108,31 @@ class SupportedLanguage(str, Enum):
     TELUGU = "Telugu"
 
 
+# Language aliases for flexible input
+LANGUAGE_ALIASES = {
+    # English variations
+    "en": SupportedLanguage.ENGLISH,
+    "eng": SupportedLanguage.ENGLISH,
+    "english": SupportedLanguage.ENGLISH,
+    # Tamil variations
+    "ta": SupportedLanguage.TAMIL,
+    "tam": SupportedLanguage.TAMIL,
+    "tamil": SupportedLanguage.TAMIL,
+    # Hindi variations
+    "hi": SupportedLanguage.HINDI,
+    "hin": SupportedLanguage.HINDI,
+    "hindi": SupportedLanguage.HINDI,
+    # Malayalam variations
+    "ml": SupportedLanguage.MALAYALAM,
+    "mal": SupportedLanguage.MALAYALAM,
+    "malayalam": SupportedLanguage.MALAYALAM,
+    # Telugu variations
+    "te": SupportedLanguage.TELUGU,
+    "tel": SupportedLanguage.TELUGU,
+    "telugu": SupportedLanguage.TELUGU,
+}
+
+
 class AudioFormat(str, Enum):
     """Supported audio formats."""
     MP3 = "mp3"
@@ -80,9 +140,9 @@ class AudioFormat(str, Enum):
 
 class VoiceDetectionRequest(BaseModel):
     """Request body for voice detection endpoint."""
-    language: SupportedLanguage = Field(
+    language: str = Field(
         ..., 
-        description="Language of the audio sample"
+        description="Language of the audio sample (accepts: English, en, eng, Tamil, ta, Hindi, hi, Malayalam, ml, Telugu, te)"
     )
     audioFormat: AudioFormat = Field(
         default=AudioFormat.MP3,
@@ -93,6 +153,31 @@ class VoiceDetectionRequest(BaseModel):
         description="Base64 encoded audio data",
         min_length=100  # Minimum reasonable audio size
     )
+    
+    # Store normalized language
+    _normalized_language: SupportedLanguage = None
+    
+    @field_validator('language')
+    @classmethod
+    def normalize_language(cls, v: str) -> str:
+        """Normalize language input to supported format."""
+        normalized = v.strip().lower()
+        
+        # Check aliases first
+        if normalized in LANGUAGE_ALIASES:
+            return LANGUAGE_ALIASES[normalized].value
+        
+        # Check if it matches any enum value (case-insensitive)
+        for lang in SupportedLanguage:
+            if normalized == lang.value.lower():
+                return lang.value
+        
+        # If not found, raise error with helpful message
+        valid_options = list(LANGUAGE_ALIASES.keys()) + [l.value for l in SupportedLanguage]
+        raise ValueError(
+            f"Unsupported language: '{v}'. "
+            f"Valid options: {', '.join(sorted(set(valid_options)))}"
+        )
     
     @field_validator('audioBase64')
     @classmethod
@@ -153,9 +238,10 @@ async def lifespan(app: FastAPI):
     Application lifespan handler.
     Load models at startup, cleanup at shutdown.
     """
-    logger.info("\n" + "=" * 70)
-    logger.info("🎙️  VoxProof API - AI Voice Detection System")
-    logger.info("=" * 70)
+    if not IS_PRODUCTION:
+        logger.info("\n" + "=" * 70)
+        logger.info("🎙️  VoxProof API - AI Voice Detection System")
+        logger.info("=" * 70)
     logger.info("Starting initialization...")
     
     # Create dummy weights if not exists (for demo purposes)
@@ -187,20 +273,23 @@ async def lifespan(app: FastAPI):
         logger.info("  ✓ Explanation generator initialized")
         
         load_time = time.time() - start_time
-        logger.info(f"⏱️  Models loaded in {load_time:.2f}s")
+        logger.info(f"Models loaded in {load_time:.2f}s")
         
     except Exception as e:
-        logger.error(f"❌ Failed to load models: {e}")
+        logger.error(f"Failed to load models: {e}")
         raise RuntimeError(f"Model initialization failed: {e}")
     
-    logger.info("=" * 70)
-    logger.info("✅ VoxProof API Ready!")
-    logger.info(f"🔑 API Key: {'Configured ✓' if config.API_KEY else 'NOT SET ✗'}")
-    logger.info(f"🤖 Model: {config.MODEL_PATH}")
-    logger.info(f"🎵 Sample Rate: {config.SAMPLE_RATE} Hz")
-    logger.info(f"📡 Access the API at: http://localhost:8000")
-    logger.info(f"📚 API Docs: http://localhost:8000/docs")
-    logger.info("=" * 70 + "\n")
+    if IS_PRODUCTION:
+        logger.info(f"VoxProof API Ready - Model: {config.MODEL_PATH}, Sample Rate: {config.SAMPLE_RATE}Hz")
+    else:
+        logger.info("=" * 70)
+        logger.info("✅ VoxProof API Ready!")
+        logger.info(f"🔑 API Key: {'Configured ✓' if config.API_KEY else 'NOT SET ✗'}")
+        logger.info(f"🤖 Model: {config.MODEL_PATH}")
+        logger.info(f"🎵 Sample Rate: {config.SAMPLE_RATE} Hz")
+        logger.info(f"📡 Access the API at: http://localhost:8000")
+        logger.info(f"📚 API Docs: http://localhost:8000/docs")
+        logger.info("=" * 70 + "\n")
     
     yield  # Application runs here
     
@@ -299,7 +388,9 @@ async def voice_detection(
     request_id = str(uuid.uuid4())[:8]
     start_time = time.time()
     
-    logger.info(f"🎯 [{request_id}] New request - Language: {request.language.value}")
+    # Create log record with request context
+    extra = {"request_id": request_id}
+    logger.info(f"Request received - Language: {request.language}, Request ID: {request_id}", extra=extra)
     
     try:
         # Get singletons
@@ -311,15 +402,15 @@ async def voice_detection(
         explainer = get_explainer()
         
         # Step 1: Process audio
-        logger.info(f"  [{request_id}] 🎵 Processing audio...")
+        logger.debug(f"[{request_id}] Processing audio...")
         waveform = processor.process_audio(request.audioBase64)
         
         # Step 2: Extract acoustic features
-        logger.info(f"  [{request_id}] 📊 Extracting features...")
+        logger.debug(f"[{request_id}] Extracting features...")
         features = processor.extract_features(waveform)
         
         # Step 3: Run model inference
-        logger.info(f"  [{request_id}] 🤖 Running AI detection...")
+        logger.debug(f"[{request_id}] Running AI detection...")
         prediction = model.predict(
             waveform=waveform,
             acoustic_features=features,
@@ -332,30 +423,37 @@ async def voice_detection(
         # Build response
         response = VoiceDetectionResponse(
             status="success",
-            language=request.language.value,
+            language=request.language,
             classification=Classification(prediction.classification),
             confidenceScore=prediction.confidence_score,
             explanation=explanation
         )
         
-        elapsed = time.time() - start_time
+        elapsed_ms = (time.time() - start_time) * 1000
+        extra = {"request_id": request_id, "duration_ms": round(elapsed_ms, 2)}
         logger.info(
-            f"✅ [{request_id}] Complete in {elapsed:.2f}s - "
-            f"Result: {prediction.classification} ({prediction.confidence_score:.1%} confidence)"
+            f"Request completed - Result: {prediction.classification}, "
+            f"Confidence: {prediction.confidence_score:.1%}, Duration: {elapsed_ms:.0f}ms, "
+            f"Request ID: {request_id}",
+            extra=extra
         )
         
         return response
         
     except ValueError as e:
         # Input validation errors
-        logger.error(f"❌ [{request_id}] Validation error: {e}")
+        elapsed_ms = (time.time() - start_time) * 1000
+        extra = {"request_id": request_id, "duration_ms": round(elapsed_ms, 2)}
+        logger.error(f"Validation error - {e}, Request ID: {request_id}", extra=extra)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e)
         )
     except Exception as e:
         # Unexpected errors
-        logger.error(f"❌ [{request_id}] Unexpected error: {e}", exc_info=True)
+        elapsed_ms = (time.time() - start_time) * 1000
+        extra = {"request_id": request_id, "duration_ms": round(elapsed_ms, 2)}
+        logger.error(f"Unexpected error - {e}, Request ID: {request_id}", extra=extra, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="An error occurred during voice analysis. Please try again."
