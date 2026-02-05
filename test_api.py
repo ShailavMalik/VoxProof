@@ -138,6 +138,13 @@ def test_voice_detection(
             audio_bytes = f.read()
         audio_base64 = base64.b64encode(audio_bytes).decode("utf-8")
         
+        # Save base64 to file for debugging
+        base64_file = Path("audio_base64.txt")
+        with open(base64_file, "w") as f:
+            f.write(audio_base64)
+        if verbose:
+            print(f"Base64 saved to: {base64_file.absolute()}")
+        
         if verbose:
             print(f"Audio File: {audio_file.name}")
             print(f"  Size: {len(audio_bytes):,} bytes")

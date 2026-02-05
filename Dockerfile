@@ -46,4 +46,5 @@ ENV TRANSFORMERS_CACHE=/root/.cache/huggingface
 EXPOSE 8000
 
 # Use shell form to expand PORT variable from Railway
-CMD uvicorn app:app --host 0.0.0.0 --port ${PORT:-8000}
+# Added timeout-keep-alive for slower connections
+CMD uvicorn app:app --host 0.0.0.0 --port ${PORT:-8000} --timeout-keep-alive 120

@@ -182,15 +182,22 @@ class VoiceDetectionRequest(BaseModel):
     @field_validator('audioBase64')
     @classmethod
     def validate_base64(cls, v: str) -> str:
-        """Validate that the string looks like valid Base64."""
+        """Validate and clean Base64 string."""
         # Strip data URL prefix if present
         if "base64," in v:
             v = v.split("base64,")[1]
         
-        # Basic validation - should be alphanumeric with +/= characters
+        # Remove all whitespace and control characters
         import re
-        if not re.match(r'^[A-Za-z0-9+/=]+$', v.replace('\n', '').replace('\r', '')):
-            raise ValueError("Invalid Base64 encoding")
+        v = re.sub(r'[\s\x00-\x1f\x7f-\x9f]', '', v)
+        
+        # Basic validation - should be alphanumeric with +/= characters
+        if not re.match(r'^[A-Za-z0-9+/=]+$', v):
+            raise ValueError("Invalid Base64 encoding - contains invalid characters")
+        
+        # Check minimum length for reasonable audio
+        if len(v) < 100:
+            raise ValueError("Audio data too short - please provide a valid audio file")
         
         return v
 
