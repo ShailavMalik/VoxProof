@@ -47,13 +47,17 @@ from utils.explain import get_explainer
 
 class Config:
     """Application configuration loaded from environment."""
-    API_KEY: str = os.getenv("API_KEY", "voxproof-secret-key-2024")
+    API_KEY: str = os.getenv("API_KEY", "")
     MODEL_PATH: str = os.getenv("MODEL_PATH", "model/classifier.pth")
     WAV2VEC_MODEL: str = os.getenv("WAV2VEC_MODEL", "facebook/wav2vec2-base-960h")
     SAMPLE_RATE: int = int(os.getenv("SAMPLE_RATE", "16000"))
 
 
 config = Config()
+
+# Validate required configuration
+if not config.API_KEY:
+    raise ValueError("ERROR: API_KEY environment variable is required. Please set it in .env file.")
 
 
 # ============================================================================

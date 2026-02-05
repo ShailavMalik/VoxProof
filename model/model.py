@@ -195,8 +195,9 @@ class VoiceDetectionModel:
         1. Extract acoustic features (from AudioProcessor)
         2. Extract Wav2Vec2 embeddings
         3. Concatenate features [786 dims]
-        4. Pass through VoiceClassifier
-        5. Apply threshold → AI_GENERATED or HUMAN
+        4. Normalize features (if scaler available)
+        5. Pass through VoiceClassifier
+        6. Apply threshold → AI_GENERATED or HUMAN
     """
     
     def __init__(
@@ -210,6 +211,7 @@ class VoiceDetectionModel:
         # Initialize components
         self.embedder = Wav2VecEmbedder(model_name=wav2vec_model_name)
         self.classifier: Optional[VoiceClassifier] = None
+        self.scaler = None  # Feature scaler for normalization
         
         self._loaded = False
         
@@ -222,6 +224,17 @@ class VoiceDetectionModel:
         
         # Load Wav2Vec2 embedder
         self.embedder.load()
+        
+        # Load feature scaler if available
+        scaler_path = Path("model/scaler.pkl")
+        if scaler_path.exists():
+            try:
+                import joblib
+                self.scaler = joblib.load(scaler_path)
+                logger.info("  ✓ Feature scaler loaded")
+            except Exception as e:
+                logger.warning(f"  ⚠ Could not load scaler: {e}")
+                self.scaler = None
         
         # Initialize classifier
         self.classifier = VoiceClassifier()
@@ -315,7 +328,11 @@ class VoiceDetectionModel:
                 wav2vec_embedding    # 768 dims
             ])
             
-            # Step 4: Convert to tensor and run through classifier
+            # Step 4: Apply feature normalization if scaler available
+            if self.scaler is not None:
+                combined_features = self.scaler.transform(combined_features.reshape(1, -1)).flatten()
+            
+            # Step 5: Convert to tensor and run through classifier
             features_tensor = torch.tensor(
                 combined_features, 
                 dtype=torch.float32

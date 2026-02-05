@@ -158,6 +158,12 @@ sentences.txt
 # Old/duplicate scripts
 train.py
 
+# Training scripts (not needed for deployment)
+train_*.py
+
+# Checkpoints directory
+checkpoints/
+
 # PDF documents
 *.pdf
 

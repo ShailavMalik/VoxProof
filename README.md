@@ -108,6 +108,103 @@ Content-Type: application/json
 
 ---
 
+## Testing the API
+
+### 1. Convert Audio to Base64
+
+First, you need to encode your MP3 file to Base64:
+
+**Windows (PowerShell):**
+
+```powershell
+$base64 = [Convert]::ToBase64String([IO.File]::ReadAllBytes("path/to/audio.mp3"))
+$base64 | Out-File -Encoding utf8 audio_base64.txt
+```
+
+**Linux/Mac:**
+
+```bash
+base64 audio.mp3 > audio_base64.txt
+# Remove newlines (optional, but recommended)
+base64 -w 0 audio.mp3 > audio_base64.txt
+```
+
+This creates a text file with the Base64-encoded audio. Use the content for API requests.
+
+### 2. Test with cURL
+
+```bash
+# Load Base64 from file and API key from .env
+$BASE64 = Get-Content audio_base64.txt -Raw
+$APIKEY = (Get-Content .env | Select-String 'API_KEY=' | ForEach-Object { $_ -replace 'API_KEY=', '' })
+
+# Make request
+curl -X POST "http://localhost:8000/api/voice-detection" `
+  -H "x-api-key: $APIKEY" `
+  -H "Content-Type: application/json" `
+  -d "{\"language\":\"English\",\"audioFormat\":\"mp3\",\"audioBase64\":\"$BASE64\"}"
+```
+
+**Linux/Mac:**
+
+```bash
+# Load BASE64 and API key from .env
+BASE64=$(cat audio_base64.txt)
+API_KEY=$(grep '^API_KEY=' .env | cut -d'=' -f2)
+
+curl -X POST "http://localhost:8000/api/voice-detection" \
+  -H "x-api-key: $API_KEY" \
+  -H "Content-Type: application/json" \
+  -d "{\"language\":\"English\",\"audioFormat\":\"mp3\",\"audioBase64\":\"$BASE64\"}"
+```
+
+### 3. Test with Python
+
+```python
+import base64
+import requests
+
+# Read and encode audio file
+with open("path/to/audio.mp3", "rb") as f:
+    audio_b64 = base64.b64encode(f.read()).decode()
+
+# Load API key from environment
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+api_key = os.getenv("API_KEY")
+
+# Send request
+response = requests.post(
+    "http://localhost:8000/api/voice-detection",
+    headers={
+        "x-api-key": api_key,
+        "Content-Type": "application/json"
+    },
+    json={
+        "language": "English",
+        "audioFormat": "mp3",
+        "audioBase64": audio_b64
+    }
+)
+
+# Print response
+print(response.json())
+```
+
+### 4. Test with Swagger UI
+
+The easiest way - just visit the interactive API docs:
+
+1. Start the server: `uvicorn app:app --reload --port 8000`
+2. Open browser: http://localhost:8000/docs
+3. Click "Try it out" on the `/api/voice-detection` endpoint
+4. Paste your Base64-encoded audio into the `audioBase64` field
+5. Click "Execute"
+
+---
+
 ## Training
 
 ```bash
@@ -126,10 +223,10 @@ Output: `model/classifier.pth`
 
 ## Environment Variables
 
-| Variable  | Default                    | Description        |
-| --------- | -------------------------- | ------------------ |
-| `API_KEY` | `voxproof-secret-key-2024` | API authentication |
-| `PORT`    | `8000`                     | Server port        |
+| Variable  | Default                            | Description                                     |
+| --------- | ---------------------------------- | ----------------------------------------------- |
+| `API_KEY` | `99d8f7fefa2c12ce971e4b320ee3af70` | 128-bit random API key (REQUIRED - set in .env) |
+| `PORT`    | `8000`                             | Server port                                     |
 
 ---
 

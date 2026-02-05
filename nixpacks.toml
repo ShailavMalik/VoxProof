@@ -1,0 +1,11 @@
+# Nixpacks configuration for Railway deployment
+# Installs FFmpeg for MP3 audio processing with pydub
+
+[phases.setup]
+nixPkgs = ["ffmpeg"]
+
+[phases.install]
+cmds = ["pip install -r requirements.txt"]
+
+[start]
+cmd = "uvicorn app:app --host 0.0.0.0 --port ${PORT:-8000}"

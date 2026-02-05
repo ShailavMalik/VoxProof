@@ -1,0 +1,68 @@
+# Git
+
+.git/
+.gitignore
+
+# Training data and scripts
+
+dataset/
+train\_\*.py
+train.py
+checkpoints/
+logs/
+
+# Audio files
+
+_.wav
+_.mp3
+_.flac
+_.ogg
+
+# Python cache
+
+**pycache**/
+_.py[cod]
+_.egg-info/
+.pytest_cache/
+
+# IDE
+
+.vscode/
+.idea/
+
+# Documentation
+
+_.md
+_.pdf
+TRAINING.md
+
+# Test files
+
+test*\*.py
+debug*\*.py
+
+# Environment
+
+.env
+.env.local
+venv/
+.venv/
+
+# Results and temp
+
+results/
+tmp/
+temp/
+_.tmp
+_.bak
+
+# Jupyter
+
+\*.ipynb
+.ipynb_checkpoints/
+
+# Other large/unnecessary files
+
+\*.tar.gz
+audio_samples/
+test_audio/
