@@ -13,6 +13,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY requirements.txt .
 RUN pip install --no-cache-dir --user -r requirements.txt
 
+# Pre-download Wav2Vec2 model to cache (reduces cold start time)
+RUN python -c "from transformers import Wav2Vec2Model, Wav2Vec2Processor; Wav2Vec2Processor.from_pretrained('facebook/wav2vec2-base-960h'); Wav2Vec2Model.from_pretrained('facebook/wav2vec2-base-960h')"
+
 # Stage 2: Runtime (minimal)
 FROM python:3.11-slim
 
@@ -27,6 +30,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # Copy installed packages from builder
 COPY --from=builder /root/.local /root/.local
+COPY --from=builder /root/.cache/huggingface /root/.cache/huggingface
 ENV PATH=/root/.local/bin:$PATH
 
 # Copy only necessary application files
@@ -35,13 +39,11 @@ COPY audio/ ./audio/
 COPY model/ ./model/
 COPY utils/ ./utils/
 
-# Pre-download Wav2Vec2 model to cache (optional, reduces cold start)
-# RUN python -c "from transformers import Wav2Vec2Model, Wav2Vec2Processor; Wav2Vec2Processor.from_pretrained('facebook/wav2vec2-base-960h'); Wav2Vec2Model.from_pretrained('facebook/wav2vec2-base-960h')"
-
 # Environment
 ENV PYTHONUNBUFFERED=1
-ENV TRANSFORMERS_CACHE=/app/.cache/huggingface
+ENV TRANSFORMERS_CACHE=/root/.cache/huggingface
 
 EXPOSE 8000
 
-CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000"]
+# Use shell form to expand PORT variable from Railway
+CMD uvicorn app:app --host 0.0.0.0 --port ${PORT:-8000}
