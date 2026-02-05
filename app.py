@@ -37,7 +37,7 @@ logging.getLogger("filelock").setLevel(logging.WARNING)
 
 # Import modules
 from audio.processing import get_processor
-from model.model import get_model, create_dummy_weights
+from model.model import get_model, create_dummy_weights, load_classifier, predict
 from utils.explain import get_explainer
 
 

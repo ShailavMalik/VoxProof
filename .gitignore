@@ -140,3 +140,26 @@ celerybeat.pid
 # Windows specific
 $RECYCLE.BIN/
 ehthumbs.db
+
+
+dataset/
+*.wav
+*.mp3
+*.tar.gz
+
+# Documentation (generated, not needed in repo)
+TRAINING.md
+
+# Dataset generation scripts (not needed for submission)
+generate_ai_voices.py
+setup_ai_dataset.py
+sentences.txt
+
+# Old/duplicate scripts
+train.py
+
+# PDF documents
+*.pdf
+
+# Test results
+results/
