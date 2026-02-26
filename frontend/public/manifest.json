@@ -1,0 +1,20 @@
+{
+  "name": "VoxProof - AI Voice Authenticity Detection",
+  "short_name": "VoxProof",
+  "description": "Detect AI-generated voices with advanced machine learning",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0a0f",
+  "theme_color": "#00f5ff",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["security", "utilities", "productivity"],
+  "screenshots": []
+}

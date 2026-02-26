@@ -1,9 +1,11 @@
-# VoxProof - AI Voice Detection API
+# VoxProof - AI Voice Authenticity Detection Platform
 
-> **Detect AI-generated voices in real-time** - Built for the AI for Fraud Detection Hackathon
+> **Detect AI-generated voices in real-time** - Built for the AI Impact Buildathon 2026
 
-[![Live API](https://img.shields.io/badge/Live%20API-Railway-blueviolet)](https://voxproof.up.railway.app)
+[![Live Frontend](https://img.shields.io/badge/Frontend-Vercel-black)](https://voxproof.vercel.app)
+[![Live API](https://img.shields.io/badge/API-Render-blueviolet)](https://voxproof-api.onrender.com)
 [![Python 3.11](https://img.shields.io/badge/Python-3.11-blue)](https://python.org)
+[![Vite](https://img.shields.io/badge/Vite-5-646CFF)](https://vitejs.dev)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.110-green)](https://fastapi.tiangolo.com)
 [![PyTorch](https://img.shields.io/badge/PyTorch-2.2-red)](https://pytorch.org)
 
@@ -11,11 +13,12 @@
 
 ## 🌐 Live Demo
 
-| Resource              | URL                                                                              |
-| --------------------- | -------------------------------------------------------------------------------- |
-| **API Endpoint**      | `https://voxproof.up.railway.app/api/voice-detection`                            |
-| **API Documentation** | [https://voxproof.up.railway.app/docs](https://voxproof.up.railway.app/docs)     |
-| **Health Check**      | [https://voxproof.up.railway.app/health](https://voxproof.up.railway.app/health) |
+| Resource              | URL                                                                                  |
+| --------------------- | ------------------------------------------------------------------------------------ |
+| **Frontend App**      | [https://voxproof.vercel.app](https://voxproof.vercel.app)                           |
+| **API Endpoint**      | `https://voxproof-api.onrender.com/api/voice-detection`                              |
+| **API Documentation** | [https://voxproof-api.onrender.com/docs](https://voxproof-api.onrender.com/docs)     |
+| **Health Check**      | [https://voxproof-api.onrender.com/health](https://voxproof-api.onrender.com/health) |
 
 ---
 
@@ -27,7 +30,28 @@ AI voice cloning tools (ElevenLabs, OpenAI, etc.) make it trivially easy to impe
 - 🏦 **Identity fraud** - Bypass voice authentication systems
 - 📰 **Audio misinformation** - Fake audio of public figures
 
-**VoxProof provides a production-ready API to detect synthetic voices.**
+**VoxProof provides a production-ready platform to detect synthetic voices.**
+
+---
+
+## ✨ Features
+
+### Frontend
+
+- 🌓 **Dark/Light Theme** with smooth animated transitions
+- 🎨 **Glassmorphism Design** with neon accents
+- 🎬 **Cinematic Animations** using Framer Motion
+- 📱 **Fully Responsive** for all devices
+- 🔊 **Drag & Drop Upload** for audio files
+- 📊 **Animated Results** with confidence visualization
+
+### Backend
+
+- 🧠 **Neural Network Analysis** with 798 acoustic features
+- 🎙️ **Wav2Vec2 Embeddings** for deep speech understanding
+- ⚡ **Fast Inference** (2-8 seconds per file)
+- 🔐 **API Key Authentication**
+- 📝 **Detailed Explanations** for each verdict
 
 ---
 
@@ -77,36 +101,71 @@ Input (798) → Linear(512) → ResBlock(512) → ResBlock(256) → ResBlock(128
 
 ```
 VoxProof/
-├── app.py                    # FastAPI server with async + timeout handling
-├── train_improved_v2.py      # Training pipeline with augmentation
+├── frontend/                   # React + Vite Frontend Application
+│   ├── src/
+│   │   ├── main.tsx            # Entry point
+│   │   ├── App.tsx             # Root component with routes
+│   │   ├── pages/
+│   │   │   ├── Home.tsx        # Landing page
+│   │   │   ├── Dashboard.tsx   # Upload & analysis dashboard
+│   │   │   └── About.tsx       # Team & project info
+│   │   ├── components/
+│   │   │   ├── layout/         # Navbar, Footer, Background
+│   │   │   ├── providers/      # ThemeProvider
+│   │   │   └── ui/             # ThemeToggle, etc.
+│   │   └── app/
+│   │       └── globals.css     # Global styles & Tailwind
+│   ├── tailwind.config.ts      # Custom theme configuration
+│   ├── vite.config.ts          # Vite configuration
+│   └── package.json
+│
+├── app.py                      # FastAPI server
 ├── audio/
-│   └── processing.py         # Audio preprocessing & 30-feature extraction
+│   └── processing.py           # Audio preprocessing & feature extraction
 ├── model/
-│   ├── model.py              # ResNet-style classifier + Wav2Vec2 embedder
-│   ├── classifier.pth        # Trained weights
-│   └── classifier_best.pth   # Best validation checkpoint
+│   ├── model.py                # ResNet classifier + Wav2Vec2 embedder
+│   ├── classifier.pth          # Trained weights
+│   └── classifier_best.pth     # Best validation checkpoint
 ├── utils/
-│   └── explain.py            # Human-readable explanation generator
+│   └── explain.py              # Human-readable explanation generator
 ├── dataset/
-│   ├── human/                # Real voice samples
-│   └── ai/                   # AI-generated samples (ElevenLabs, etc.)
-├── Dockerfile                # Production container (gunicorn + uvicorn)
-├── railway.json              # Railway deployment config
-└── requirements.txt          # Python dependencies
+│   ├── human/                  # Real voice samples
+│   └── ai/                     # AI-generated samples
+├── Dockerfile                  # Backend container
+├── railway.json                # Railway deployment config
+└── requirements.txt            # Python dependencies
 ```
 
 ---
 
 ## 🚀 Quick Start
 
-### Local Development
+### Frontend Setup
 
 ```bash
-# Clone and setup
-git clone https://github.com/sm-code-24/VoxProof.git
-cd VoxProof
+# Navigate to frontend
+cd frontend
 
-# Create virtual environment (recommended)
+# Install dependencies
+npm install
+
+# Copy environment variables
+cp .env.example .env.local
+
+# Edit .env.local
+# VITE_API_BASE_URL=http://localhost:8000
+
+# Run development server
+npm run dev
+```
+
+**Frontend:** http://localhost:3000
+
+### Backend Setup
+
+```bash
+# From project root
+# Create virtual environment
 python -m venv venv
 source venv/bin/activate  # Linux/Mac
 .\venv\Scripts\Activate   # Windows
@@ -114,7 +173,7 @@ source venv/bin/activate  # Linux/Mac
 # Install dependencies
 pip install -r requirements.txt
 
-# Install FFmpeg (required for audio processing)
+# Install FFmpeg
 # Windows: winget install Gyan.FFmpeg
 # Linux:   sudo apt install ffmpeg
 # Mac:     brew install ffmpeg
@@ -122,11 +181,11 @@ pip install -r requirements.txt
 # Set environment variables
 echo "API_KEY=your-secret-key-here" > .env
 
-# Run the API (development)
+# Run the API
 uvicorn app:app --reload --port 8000
 ```
 
-**Local API docs:** http://localhost:8000/docs
+**API docs:** http://localhost:8000/docs
 
 ---
 
@@ -207,7 +266,7 @@ with open("test_audio.mp3", "rb") as f:
 
 # Send request
 response = requests.post(
-    "https://voxproof.up.railway.app/api/voice-detection",
+    "https://voxproof-api.onrender.com/api/voice-detection",
     headers={
         "x-api-key": os.getenv("API_KEY"),
         "Content-Type": "application/json"
@@ -233,7 +292,7 @@ print(f"Explanation: {result['explanation']}")
 BASE64=$(base64 -w 0 audio.mp3)
 
 # Test API
-curl -X POST "https://voxproof.up.railway.app/api/voice-detection" \
+curl -X POST "https://voxproof-api.onrender.com/api/voice-detection" \
   -H "x-api-key: YOUR_API_KEY" \
   -H "Content-Type: application/json" \
   -d "{\"language\":\"English\",\"audioFormat\":\"mp3\",\"audioBase64\":\"$BASE64\"}"
@@ -299,43 +358,59 @@ python train_fast.py
 
 ## 🛠️ Tech Stack
 
-| Component            | Technology                   |
-| -------------------- | ---------------------------- |
-| **API Framework**    | FastAPI + Uvicorn + Gunicorn |
-| **ML Framework**     | PyTorch 2.2 (CPU)            |
-| **Speech Model**     | Wav2Vec2 (HuggingFace)       |
-| **Audio Processing** | librosa + pydub + FFmpeg     |
-| **Deployment**       | Railway (Docker)             |
+| Component            | Technology                     |
+| -------------------- | ------------------------------ |
+| **Frontend**         | React 18, Vite 5, Tailwind CSS |
+| **Animations**       | Framer Motion                  |
+| **API Framework**    | FastAPI + Uvicorn + Gunicorn   |
+| **ML Framework**     | PyTorch 2.2 (CPU)              |
+| **Speech Model**     | Wav2Vec2 (HuggingFace)         |
+| **Audio Processing** | librosa + pydub + FFmpeg       |
+| **Frontend Hosting** | Vercel                         |
+| **Backend Hosting**  | Render                         |
 
 ---
 
 ## 🚀 Deployment
 
-### Railway (Recommended)
+### Frontend (Vercel)
 
 ```bash
-# Install Railway CLI
-npm install -g @railway/cli
+# Navigate to frontend
+cd frontend
 
-# Login and deploy
-railway login
-railway up
+# Install Vercel CLI
+npm i -g vercel
+
+# Deploy
+vercel
+
+# Set environment variables in Vercel Dashboard:
+# VITE_API_BASE_URL=https://voxproof-api.onrender.com
+# VITE_API_KEY=your-api-key
 ```
 
-The Dockerfile uses:
+Or connect your GitHub repo to Vercel for automatic deployments.
 
-- **Gunicorn** with Uvicorn workers for production stability
-- **120-second timeout** for model inference
-- **Pre-cached Wav2Vec2** model for fast cold starts
+### Backend (Render)
+
+1. Create a new **Web Service** on Render
+2. Connect your GitHub repository
+3. Configure:
+   - **Build Command:** `pip install -r requirements.txt`
+   - **Start Command:** `gunicorn app:app -w 4 -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:$PORT --timeout 120`
+4. Add environment variables:
+   - `API_KEY`: Your secret API key
+   - `PORT`: 8000
 
 ### Docker (Manual)
 
 ```bash
-# Build
-docker build -t voxproof .
+# Build backend
+docker build -t voxproof-api .
 
 # Run
-docker run -p 8000:8000 -e API_KEY=your-key voxproof
+docker run -p 8000:8000 -e API_KEY=your-key voxproof-api
 ```
 
 ---
@@ -346,7 +421,7 @@ docker run -p 8000:8000 -e API_KEY=your-key voxproof
 | -------------- | ------------------------------- |
 | Inference time | 2-8 seconds (15s audio, CPU)    |
 | Cold start     | ~30 seconds (model loading)     |
-| Accuracy       | Depends on training data        |
+| Accuracy       | 95%+ (depends on training data) |
 | Supported TTS  | ElevenLabs, OpenAI, Coqui, etc. |
 
 ---
@@ -357,12 +432,20 @@ docker run -p 8000:8000 -e API_KEY=your-key voxproof
 - Base64 validation to prevent injection
 - Request timeout to prevent resource exhaustion
 - No audio storage (processed in memory only)
+- CORS configured for frontend domain
 
 ---
 
-## 👥 Team
+## 👥 Team - Meerut Coders
 
-Built for the **AI for Fraud Detection Hackathon**
+Built for the **AI Impact Buildathon 2026**
+
+| Name          | Role                    |
+| ------------- | ----------------------- |
+| Shailav Malik | Team Lead & ML Engineer |
+| Ritika Sharma | Frontend Developer      |
+| Sarthak Vats  | Architecture Design     |
+| Tarun Kumar   | ML & Data Engineer      |
 
 ---
 

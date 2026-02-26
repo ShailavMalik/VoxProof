@@ -1,0 +1,167 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+    :root {
+        --background: 250 252 255;
+        --foreground: 10 10 15;
+    }
+
+    .dark {
+        --background: 10 10 15;
+        --foreground: 250 252 255;
+    }
+
+    html {
+        scroll-behavior: smooth;
+    }
+
+    body {
+        @apply bg-light-50 text-dark-900 dark:bg-dark-900 dark:text-light-50;
+        @apply transition-colors duration-500;
+    }
+
+    ::selection {
+        @apply bg-neon-cyan/30 text-white;
+    }
+}
+
+@layer components {
+    .glass-card {
+        @apply bg-glass-light dark:bg-glass-dark;
+        @apply backdrop-blur-xl;
+        @apply border border-white/20 dark:border-white/5;
+        @apply shadow-glass-light dark:shadow-glass;
+        @apply rounded-2xl;
+    }
+
+    .glass-card-hover {
+        @apply glass-card;
+        @apply transition-all duration-300;
+        @apply hover:border-neon-cyan/30 dark:hover:border-neon-cyan/20;
+        @apply hover:shadow-neon-glow;
+    }
+
+    .neon-text {
+        @apply bg-gradient-to-r from-neon-cyan via-neon-purple to-neon-pink;
+        @apply bg-clip-text text-transparent;
+        @apply animate-gradient-shift;
+        background-size: 200% 200%;
+    }
+
+    .neon-border {
+        @apply border border-transparent;
+        @apply bg-gradient-to-r from-neon-cyan via-neon-purple to-neon-pink;
+        background-origin: border-box;
+        background-clip: padding-box, border-box;
+    }
+
+    .btn-primary {
+        @apply relative overflow-hidden;
+        @apply px-8 py-4 rounded-xl;
+        @apply bg-gradient-to-r from-neon-cyan to-neon-purple;
+        @apply text-white font-semibold;
+        @apply transition-all duration-300;
+        @apply hover:shadow-neon-cyan hover:scale-105;
+        @apply active:scale-95;
+    }
+
+    .btn-secondary {
+        @apply px-8 py-4 rounded-xl;
+        @apply border border-neon-cyan/50;
+        @apply text-neon-cyan;
+        @apply transition-all duration-300;
+        @apply hover:bg-neon-cyan/10 hover:border-neon-cyan;
+        @apply active:scale-95;
+    }
+
+    .input-field {
+        @apply w-full px-4 py-3 rounded-xl;
+        @apply bg-white/50 dark:bg-dark-700/50;
+        @apply border border-light-300 dark:border-dark-500;
+        @apply focus:outline-none focus:border-neon-cyan focus:ring-2 focus:ring-neon-cyan/20;
+        @apply transition-all duration-300;
+        @apply placeholder:text-light-400 dark:placeholder:text-dark-500;
+    }
+
+    .gradient-bg {
+        @apply fixed inset-0 -z-10;
+        @apply bg-gradient-light-mesh dark:bg-gradient-dark-mesh;
+    }
+
+    .gradient-orb {
+        @apply absolute rounded-full blur-3xl opacity-30;
+        @apply animate-pulse-slow;
+    }
+}
+
+@layer utilities {
+    .text-balance {
+        text-wrap: balance;
+    }
+
+    .gradient-mask {
+        mask-image: linear-gradient(to bottom, black 60%, transparent 100%);
+    }
+
+    .animate-delay-200 {
+        animation-delay: 200ms;
+    }
+
+    .animate-delay-400 {
+        animation-delay: 400ms;
+    }
+
+    .animate-delay-600 {
+        animation-delay: 600ms;
+    }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    @apply bg-transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    @apply bg-light-300 dark:bg-dark-600 rounded-full;
+    @apply hover:bg-light-400 dark:hover:bg-dark-500;
+}
+
+/* Animations for page transitions */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes scaleIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.fade-in {
+    animation: fadeIn 0.6s ease-out forwards;
+}
+
+.scale-in {
+    animation: scaleIn 0.5s ease-out forwards;
+}
