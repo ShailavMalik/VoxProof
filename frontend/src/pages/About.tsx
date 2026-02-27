@@ -31,24 +31,28 @@ const teamMembers = [
     role: "Team Lead & ML Engineer",
     linkedin: "https://linkedin.com/in/shailavmalik",
     gradient: "from-neon-cyan to-neon-blue",
+    image: "/img/shailav.png",
   },
   {
     name: "Ritika Sharma",
     role: "Frontend Developer",
-    linkedin: "https://linkedin.com/in/ritikasharma",
+    linkedin: "https://www.linkedin.com/in/ritika-sharma-012979398/",
     gradient: "from-neon-purple to-neon-pink",
+    image: "/img/ritika.png",
   },
   {
     name: "Sarthak Vats",
     role: "Architecture Design",
-    linkedin: "https://linkedin.com/in/sarthakvats",
+    linkedin: "https://www.linkedin.com/in/sarthak-vats-301a3a358/",
     gradient: "from-neon-cyan to-neon-purple",
+    image: "/img/sarthak.png",
   },
   {
     name: "Tarun Kumar",
     role: "ML & Data Engineer",
-    linkedin: "https://linkedin.com/in/tarunkumar",
+    linkedin: "https://www.linkedin.com/in/tarun-kumar-7238b1367/",
     gradient: "from-neon-pink to-neon-cyan",
+    image: "/img/tarun.png",
   },
 ];
 
@@ -187,18 +191,35 @@ export default function AboutPage() {
                 variants={fadeInUp}
                 whileHover={{ y: -5 }}
                 className="glass-card-hover p-6 text-center group">
-                {/* Avatar */}
+                {/* Avatar with Image */}
                 <div className="relative mb-6">
                   <div
                     className={`
-                      w-24 h-24 mx-auto rounded-full bg-gradient-to-br ${member.gradient}
-                      flex items-center justify-center text-2xl font-bold text-white
-                      shadow-lg group-hover:shadow-neon-glow transition-shadow
+                      relative w-24 h-24 mx-auto rounded-full overflow-hidden
+                      ring-2 ring-transparent group-hover:ring-neon-cyan/50
+                      shadow-lg group-hover:shadow-neon-glow transition-all duration-300
                     `}>
-                    {member.name
-                      .split(" ")
-                      .map((n) => n[0])
-                      .join("")}
+                    {/* Gradient border effect */}
+                    <div
+                      className={`absolute -inset-0.5 bg-gradient-to-br ${member.gradient} rounded-full opacity-0 group-hover:opacity-100 transition-opacity blur-sm`}
+                    />
+                    <img
+                      src={member.image}
+                      alt={member.name}
+                      className="relative w-full h-full object-cover rounded-full"
+                      onError={(e) => {
+                        // Fallback to initials if image fails to load
+                        const target = e.target as HTMLImageElement;
+                        target.style.display = "none";
+                        const parent = target.parentElement;
+                        if (parent) {
+                          parent.innerHTML = `<div class="w-full h-full flex items-center justify-center text-2xl font-bold text-white bg-gradient-to-br ${member.gradient}">${member.name
+                            .split(" ")
+                            .map((n) => n[0])
+                            .join("")}</div>`;
+                        }
+                      }}
+                    />
                   </div>
                   <motion.div
                     className={`

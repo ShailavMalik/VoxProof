@@ -69,10 +69,12 @@
 
     .btn-secondary {
         @apply px-8 py-4 rounded-xl;
-        @apply border border-neon-cyan/50;
-        @apply text-neon-cyan;
+        @apply border-2 border-neon-cyan;
+        @apply text-dark-700 dark:text-neon-cyan;
+        @apply bg-neon-cyan/10 dark:bg-transparent;
+        @apply font-semibold;
         @apply transition-all duration-300;
-        @apply hover:bg-neon-cyan/10 hover:border-neon-cyan;
+        @apply hover:bg-neon-cyan/20 hover:border-neon-cyan hover:shadow-neon-cyan;
         @apply active:scale-95;
     }
 

@@ -227,13 +227,40 @@ export default function DashboardPage() {
           visible: { opacity: 1, transition: { staggerChildren: 0.1 } },
         }}>
         {/* Header */}
-        <motion.div variants={fadeInUp} className="text-center mb-12">
+        <motion.div variants={fadeInUp} className="text-center mb-12 relative">
+          {/* Decorative lines */}
+          <div className="absolute left-0 right-0 top-1/2 flex items-center justify-center gap-4 -z-10">
+            <motion.div
+              className="h-px w-24 bg-gradient-to-r from-transparent to-neon-cyan/50"
+              animate={{ opacity: [0.3, 0.7, 0.3] }}
+              transition={{ duration: 2, repeat: Infinity }}
+            />
+            <div className="w-2 h-2 rounded-full bg-neon-cyan/30" />
+            <motion.div
+              className="h-px w-24 bg-gradient-to-l from-transparent to-neon-purple/50"
+              animate={{ opacity: [0.3, 0.7, 0.3] }}
+              transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}
+            />
+          </div>
+
           <h1 className="text-3xl md:text-4xl font-bold mb-4">
             Voice <span className="neon-text">Analysis</span>
           </h1>
           <p className="text-dark-500 dark:text-light-400">
             Upload an audio file to detect if it's AI-generated or human
           </p>
+
+          {/* Status indicator */}
+          <div className="flex items-center justify-center gap-2 mt-4">
+            <motion.div
+              className="w-2 h-2 rounded-full bg-neon-cyan"
+              animate={{ scale: [1, 1.2, 1], opacity: [0.5, 1, 0.5] }}
+              transition={{ duration: 1.5, repeat: Infinity }}
+            />
+            <span className="text-xs text-neon-cyan font-medium tracking-wider uppercase">
+              System Ready
+            </span>
+          </div>
         </motion.div>
 
         {/* Futuristic Loading Animation Overlay */}
@@ -242,14 +269,23 @@ export default function DashboardPage() {
         </AnimatePresence>
 
         {/* Upload Area */}
-        <motion.div variants={fadeInUp} className="mb-8">
+        <motion.div variants={fadeInUp} className="mb-8 relative">
+          {/* Subtle outer glow when dragging */}
+          {isDragging && (
+            <motion.div
+              className="absolute -inset-1 bg-gradient-to-r from-neon-cyan via-neon-purple to-neon-cyan rounded-2xl blur-md"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 0.4 }}
+            />
+          )}
+
           <div
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
             onClick={() => !file && fileInputRef.current?.click()}
             className={`
-              relative glass-card p-12 text-center cursor-pointer transition-all duration-300
+              relative glass-card p-12 text-center cursor-pointer transition-all duration-300 overflow-hidden
               ${
                 isDragging ?
                   "border-neon-cyan border-2 bg-neon-cyan/5"
@@ -257,6 +293,24 @@ export default function DashboardPage() {
               }
               ${file ? "cursor-default" : ""}
             `}>
+            {/* Background grid pattern */}
+            <div
+              className="absolute inset-0 opacity-[0.03]"
+              style={{
+                backgroundImage: `
+                linear-gradient(rgba(0,245,255,0.5) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0,245,255,0.5) 1px, transparent 1px)
+              `,
+                backgroundSize: "30px 30px",
+              }}
+            />
+
+            {/* Corner tech decorations */}
+            <div className="absolute top-2 left-2 w-6 h-6 border-l-2 border-t-2 border-neon-cyan/30 rounded-tl-lg" />
+            <div className="absolute top-2 right-2 w-6 h-6 border-r-2 border-t-2 border-neon-purple/30 rounded-tr-lg" />
+            <div className="absolute bottom-2 left-2 w-6 h-6 border-l-2 border-b-2 border-neon-purple/30 rounded-bl-lg" />
+            <div className="absolute bottom-2 right-2 w-6 h-6 border-r-2 border-b-2 border-neon-cyan/30 rounded-br-lg" />
+
             <input
               ref={fileInputRef}
               type="file"
@@ -273,13 +327,19 @@ export default function DashboardPage() {
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.9 }}
-                  className="flex flex-col items-center">
+                  className="flex flex-col items-center relative z-10">
                   <motion.div
                     animate={{ y: isDragging ? -10 : 0 }}
-                    className="p-4 rounded-2xl bg-neon-cyan/10 mb-6">
-                    <Upload className="w-10 h-10 text-neon-cyan" />
+                    className="relative p-4 rounded-2xl bg-gradient-to-br from-neon-cyan/20 to-neon-purple/10 mb-6">
+                    {/* Glowing effect */}
+                    <motion.div
+                      className="absolute inset-0 rounded-2xl bg-neon-cyan/20 blur-xl"
+                      animate={{ opacity: [0.3, 0.6, 0.3] }}
+                      transition={{ duration: 2, repeat: Infinity }}
+                    />
+                    <Upload className="w-10 h-10 text-neon-cyan relative z-10" />
                   </motion.div>
-                  <p className="text-lg font-medium mb-2">
+                  <p className="text-lg font-semibold mb-2 bg-gradient-to-r from-neon-cyan to-neon-purple bg-clip-text text-transparent">
                     {isDragging ?
                       "Drop your file here"
                     : "Drag & drop audio file"}
@@ -287,16 +347,19 @@ export default function DashboardPage() {
                   <p className="text-sm text-dark-500 dark:text-light-400 mb-4">
                     or click to browse
                   </p>
-                  <p className="text-xs text-dark-400 dark:text-light-500">
-                    Supported: MP3, WAV (Max 10MB)
-                  </p>
+                  <div className="flex items-center gap-2 text-xs text-dark-400 dark:text-light-500">
+                    <div className="w-1 h-1 rounded-full bg-neon-cyan" />
+                    <span>Supported: MP3, WAV</span>
+                    <div className="w-1 h-1 rounded-full bg-neon-purple" />
+                    <span>Max 10MB</span>
+                  </div>
                 </motion.div>
               : <motion.div
                   key="file"
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.9 }}
-                  className="flex items-center justify-between">
+                  className="flex items-center justify-between relative z-10">
                   <div className="flex items-center gap-4">
                     <div className="p-3 rounded-xl bg-neon-cyan/10">
                       <FileAudio className="w-8 h-8 text-neon-cyan" />
@@ -340,23 +403,62 @@ export default function DashboardPage() {
         </AnimatePresence>
 
         {/* Analyze Button */}
-        <motion.div variants={fadeInUp} className="mb-8">
+        <motion.div variants={fadeInUp} className="mb-8 relative">
+          {/* Button glow effect when enabled */}
+          {file && !isAnalyzing && (
+            <motion.div
+              className="absolute -inset-0.5 bg-gradient-to-r from-neon-cyan via-neon-purple to-neon-pink rounded-xl blur-sm"
+              animate={{ opacity: [0.4, 0.7, 0.4] }}
+              transition={{ duration: 2, repeat: Infinity }}
+            />
+          )}
+
           <motion.button
             onClick={analyzeAudio}
             disabled={!file || isAnalyzing}
             whileHover={{ scale: file && !isAnalyzing ? 1.02 : 1 }}
             whileTap={{ scale: file && !isAnalyzing ? 0.98 : 1 }}
             className={`
-              w-full py-4 rounded-xl font-semibold text-white relative overflow-hidden
+              relative w-full py-4 rounded-xl font-semibold text-white overflow-hidden
               ${
                 file && !isAnalyzing ?
-                  "bg-gradient-to-r from-neon-cyan to-neon-purple hover:shadow-neon-cyan"
-                : "bg-dark-500 cursor-not-allowed"
+                  "bg-gradient-to-r from-neon-cyan via-neon-purple to-neon-pink"
+                : "bg-dark-600/80 cursor-not-allowed"
               }
               transition-all duration-300
             `}>
+            {/* Animated shine effect */}
+            {file && !isAnalyzing && (
+              <motion.div
+                className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12"
+                initial={{ x: "-100%" }}
+                animate={{ x: "200%" }}
+                transition={{ duration: 2, repeat: Infinity, repeatDelay: 1 }}
+              />
+            )}
+
+            {/* Inner border */}
+            <div className="absolute inset-0.5 rounded-xl border border-white/10" />
+
             <span className="relative z-10 flex items-center justify-center gap-2">
-              {isAnalyzing ? "Processing..." : "Analyze Audio"}
+              {isAnalyzing ?
+                <>
+                  <motion.div
+                    className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full"
+                    animate={{ rotate: 360 }}
+                    transition={{
+                      duration: 1,
+                      repeat: Infinity,
+                      ease: "linear",
+                    }}
+                  />
+                  Processing...
+                </>
+              : <>
+                  <Zap className="w-5 h-5" />
+                  Analyze Audio
+                </>
+              }
             </span>
           </motion.button>
         </motion.div>
@@ -374,25 +476,46 @@ export default function DashboardPage() {
           )}
         </AnimatePresence>
 
-        {/* Info Section */}
-        <motion.div
-          variants={fadeInUp}
-          className="mt-12 glass-card p-6 flex items-start gap-4">
-          <Info className="w-5 h-5 text-neon-cyan flex-shrink-0 mt-0.5" />
-          <div className="text-sm text-dark-500 dark:text-light-400">
-            <p className="mb-2">
-              <strong className="text-dark-700 dark:text-light-200">
-                How it works:
-              </strong>{" "}
-              Our AI extracts 798 acoustic features including MFCCs, pitch
-              analysis, and Wav2Vec2 embeddings to detect synthetic voices.
-            </p>
-            <p>
-              <strong className="text-dark-700 dark:text-light-200">
-                Best results:
-              </strong>{" "}
-              Use clear audio recordings up to 15 seconds for optimal accuracy.
-            </p>
+        {/* Info Section - Futuristic */}
+        <motion.div variants={fadeInUp} className="mt-12 relative">
+          {/* Subtle glow */}
+          <div className="absolute -inset-0.5 bg-gradient-to-r from-neon-cyan/20 via-transparent to-neon-purple/20 rounded-xl blur-sm" />
+
+          <div className="relative glass-card p-6 overflow-hidden">
+            {/* Corner decorations */}
+            <div className="absolute top-1 left-1 w-3 h-3 border-l border-t border-neon-cyan/50 rounded-tl" />
+            <div className="absolute top-1 right-1 w-3 h-3 border-r border-t border-neon-purple/50 rounded-tr" />
+            <div className="absolute bottom-1 left-1 w-3 h-3 border-l border-b border-neon-purple/50 rounded-bl" />
+            <div className="absolute bottom-1 right-1 w-3 h-3 border-r border-b border-neon-cyan/50 rounded-br" />
+
+            <div className="flex items-start gap-4">
+              <div className="p-2 rounded-lg bg-gradient-to-br from-neon-cyan/20 to-neon-purple/10">
+                <Info className="w-5 h-5 text-neon-cyan" />
+              </div>
+              <div className="text-sm text-dark-500 dark:text-light-400 flex-1">
+                <p className="mb-3">
+                  <strong className="text-neon-cyan">How it works:</strong> Our
+                  AI extracts 798 acoustic features including MFCCs, pitch
+                  analysis, and Wav2Vec2 embeddings to detect synthetic voices.
+                </p>
+                <p>
+                  <strong className="text-neon-purple">Best results:</strong>{" "}
+                  Use clear audio recordings up to 15 seconds for optimal
+                  accuracy.
+                </p>
+              </div>
+            </div>
+
+            {/* Animated bottom line */}
+            <motion.div
+              className="absolute bottom-0 left-0 right-0 h-px"
+              style={{
+                background:
+                  "linear-gradient(90deg, transparent, #00f5ff, #bf00ff, transparent)",
+              }}
+              animate={{ opacity: [0.3, 0.7, 0.3] }}
+              transition={{ duration: 3, repeat: Infinity }}
+            />
           </div>
         </motion.div>
       </motion.div>
@@ -412,72 +535,170 @@ function ResultCard({
   const confidence = Math.round(result.confidenceScore * 100);
 
   return (
-    <div className="glass-card p-8">
-      {/* Verdict */}
-      <div className="text-center mb-8">
+    <div className="relative">
+      {/* Outer glow effect */}
+      <motion.div
+        className={`absolute -inset-1 rounded-2xl opacity-30 blur-xl ${isAI ? "bg-verdict-ai-primary" : "bg-verdict-human-primary"}`}
+        animate={{ opacity: [0.2, 0.4, 0.2] }}
+        transition={{ duration: 3, repeat: Infinity }}
+      />
+
+      <div className="relative glass-card p-8 overflow-hidden">
+        {/* Animated background grid */}
+        <div className="absolute inset-0 opacity-5">
+          <div
+            className="absolute inset-0"
+            style={{
+              backgroundImage: `
+              linear-gradient(rgba(0,245,255,0.1) 1px, transparent 1px),
+              linear-gradient(90deg, rgba(0,245,255,0.1) 1px, transparent 1px)
+            `,
+              backgroundSize: "20px 20px",
+            }}
+          />
+        </div>
+
+        {/* Corner tech decorations */}
+        <div className="absolute top-2 left-2 w-8 h-8 border-l-2 border-t-2 border-neon-cyan/40 rounded-tl-lg" />
+        <div className="absolute top-2 right-2 w-8 h-8 border-r-2 border-t-2 border-neon-purple/40 rounded-tr-lg" />
+        <div className="absolute bottom-2 left-2 w-8 h-8 border-l-2 border-b-2 border-neon-purple/40 rounded-bl-lg" />
+        <div className="absolute bottom-2 right-2 w-8 h-8 border-r-2 border-b-2 border-neon-cyan/40 rounded-br-lg" />
+
+        {/* Top scanning line */}
         <motion.div
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          transition={{ type: "spring", stiffness: 200, delay: 0.2 }}
-          className={`
+          className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-neon-cyan to-transparent"
+          animate={{ opacity: [0, 1, 0] }}
+          transition={{ duration: 2, repeat: Infinity }}
+        />
+        {/* Verdict */}
+        <div className="text-center mb-8">
+          <motion.div
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ type: "spring", stiffness: 200, delay: 0.2 }}
+            className={`
             inline-flex p-6 rounded-full mb-6
             ${isAI ? "bg-verdict-ai-primary/10" : "bg-verdict-human-primary/10"}
           `}>
-          {isAI ?
-            <AlertTriangle className="w-12 h-12 text-verdict-ai-primary" />
-          : <CheckCircle className="w-12 h-12 text-verdict-human-primary" />}
-        </motion.div>
+            {isAI ?
+              <AlertTriangle className="w-12 h-12 text-verdict-ai-primary" />
+            : <CheckCircle className="w-12 h-12 text-verdict-human-primary" />}
+          </motion.div>
 
-        <motion.h2
+          <motion.h2
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className={`text-2xl md:text-3xl font-bold mb-2 ${
+              isAI ? "text-verdict-ai-primary" : "text-verdict-human-primary"
+            }`}>
+            {isAI ? "AI Generated" : "Human Voice"}
+          </motion.h2>
+
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.4 }}
+            className="text-dark-500 dark:text-light-400">
+            {isAI ?
+              "This audio appears to be synthetically generated"
+            : "This audio appears to be from a real human voice"}
+          </motion.p>
+        </div>
+
+        {/* Confidence Ring */}
+        <div className="flex justify-center mb-8">
+          <ConfidenceRing confidence={confidence} isAI={isAI} />
+        </div>
+
+        {/* Explanation - Futuristic Box */}
+        <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className={`text-2xl md:text-3xl font-bold mb-2 ${
-            isAI ? "text-verdict-ai-primary" : "text-verdict-human-primary"
-          }`}>
-          {isAI ? "AI Generated" : "Human Voice"}
-        </motion.h2>
+          transition={{ delay: 0.6 }}
+          className="relative mb-6">
+          {/* Gradient border glow */}
+          <div className="absolute -inset-0.5 bg-gradient-to-r from-neon-cyan via-neon-purple to-neon-pink rounded-xl opacity-50 blur-sm" />
+          <div className="absolute -inset-0.5 bg-gradient-to-r from-neon-cyan via-neon-purple to-neon-pink rounded-xl opacity-30" />
 
-        <motion.p
+          {/* Main content box */}
+          <div className="relative p-6 rounded-xl bg-dark-900/90 dark:bg-dark-800/95 backdrop-blur-xl border border-white/10">
+            {/* Corner decorations */}
+            <div className="absolute top-0 left-0 w-4 h-4 border-l-2 border-t-2 border-neon-cyan rounded-tl-lg" />
+            <div className="absolute top-0 right-0 w-4 h-4 border-r-2 border-t-2 border-neon-purple rounded-tr-lg" />
+            <div className="absolute bottom-0 left-0 w-4 h-4 border-l-2 border-b-2 border-neon-purple rounded-bl-lg" />
+            <div className="absolute bottom-0 right-0 w-4 h-4 border-r-2 border-b-2 border-neon-cyan rounded-br-lg" />
+
+            {/* Header with icon */}
+            <div className="flex items-center gap-3 mb-3">
+              <div className="p-2 rounded-lg bg-gradient-to-br from-neon-cyan/20 to-neon-purple/20">
+                <Brain className="w-4 h-4 text-neon-cyan" />
+              </div>
+              <h3 className="font-semibold text-sm bg-gradient-to-r from-neon-cyan to-neon-purple bg-clip-text text-transparent">
+                Analysis Details
+              </h3>
+              {/* Animated scan line */}
+              <motion.div
+                className="flex-1 h-px bg-gradient-to-r from-transparent via-neon-cyan/50 to-transparent"
+                animate={{ opacity: [0.3, 0.8, 0.3] }}
+                transition={{ duration: 2, repeat: Infinity }}
+              />
+            </div>
+
+            {/* Content with subtle glow */}
+            <p className="text-sm text-light-300 leading-relaxed pl-11">
+              {result.explanation}
+            </p>
+
+            {/* Bottom tech line decoration */}
+            <div className="absolute bottom-2 left-6 right-6 flex items-center gap-2">
+              <div className="flex-1 h-px bg-gradient-to-r from-neon-cyan/30 via-transparent to-neon-purple/30" />
+              <div className="flex gap-1">
+                {[...Array(3)].map((_, i) => (
+                  <motion.div
+                    key={i}
+                    className="w-1 h-1 rounded-full bg-neon-cyan"
+                    animate={{ opacity: [0.3, 1, 0.3] }}
+                    transition={{
+                      duration: 1,
+                      repeat: Infinity,
+                      delay: i * 0.2,
+                    }}
+                  />
+                ))}
+              </div>
+              <div className="flex-1 h-px bg-gradient-to-r from-neon-purple/30 via-transparent to-neon-cyan/30" />
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Actions */}
+        <motion.button
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.4 }}
-          className="text-dark-500 dark:text-light-400">
-          {isAI ?
-            "This audio appears to be synthetically generated"
-          : "This audio appears to be from a real human voice"}
-        </motion.p>
+          transition={{ delay: 0.7 }}
+          onClick={onReset}
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          className="relative w-full py-4 rounded-xl overflow-hidden group">
+          {/* Button gradient background */}
+          <div className="absolute inset-0 bg-gradient-to-r from-neon-cyan/20 via-neon-purple/20 to-neon-cyan/20 group-hover:from-neon-cyan/30 group-hover:via-neon-purple/30 group-hover:to-neon-cyan/30 transition-all duration-300" />
+          <div className="absolute inset-0 border border-neon-cyan/50 rounded-xl group-hover:border-neon-cyan/80 transition-colors" />
+
+          {/* Animated shine effect */}
+          <motion.div
+            className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -skew-x-12"
+            initial={{ x: "-100%" }}
+            whileHover={{ x: "100%" }}
+            transition={{ duration: 0.6 }}
+          />
+
+          <span className="relative flex items-center justify-center gap-2 font-semibold text-neon-cyan">
+            <RefreshCw className="w-4 h-4" />
+            Analyze Another File
+          </span>
+        </motion.button>
       </div>
-
-      {/* Confidence Ring */}
-      <div className="flex justify-center mb-8">
-        <ConfidenceRing confidence={confidence} isAI={isAI} />
-      </div>
-
-      {/* Explanation */}
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.6 }}
-        className="p-4 rounded-xl bg-white/50 dark:bg-dark-700/50 mb-6">
-        <h3 className="font-semibold mb-2 text-sm text-dark-600 dark:text-light-300">
-          Analysis Details
-        </h3>
-        <p className="text-sm text-dark-500 dark:text-light-400">
-          {result.explanation}
-        </p>
-      </motion.div>
-
-      {/* Actions */}
-      <motion.button
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.7 }}
-        onClick={onReset}
-        className="w-full py-3 rounded-xl border border-neon-cyan/50 text-neon-cyan hover:bg-neon-cyan/10 transition-colors flex items-center justify-center gap-2">
-        <RefreshCw className="w-4 h-4" />
-        Analyze Another File
-      </motion.button>
     </div>
   );
 }
@@ -693,10 +914,27 @@ function ConfidenceRing({
   const circumference = 2 * Math.PI * radius;
   const strokeDashoffset = circumference - (confidence / 100) * circumference;
   const color = isAI ? "#ff4444" : "#00cc88";
+  const secondaryColor = isAI ? "#ff6b6b" : "#00ffaa";
 
   return (
     <div className="relative">
-      <svg width="150" height="150" className="transform -rotate-90">
+      {/* Outer glow */}
+      <motion.div
+        className="absolute inset-0 rounded-full blur-xl"
+        style={{ backgroundColor: color }}
+        animate={{ opacity: [0.1, 0.25, 0.1] }}
+        transition={{ duration: 2, repeat: Infinity }}
+      />
+
+      {/* Decorative outer ring */}
+      <motion.div
+        className="absolute -inset-3 rounded-full border border-dashed"
+        style={{ borderColor: `${color}30` }}
+        animate={{ rotate: 360 }}
+        transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+      />
+
+      <svg width="150" height="150" className="transform -rotate-90 relative">
         {/* Background circle */}
         <circle
           cx="75"
@@ -707,38 +945,104 @@ function ConfidenceRing({
           strokeWidth="8"
           className="text-light-200 dark:text-dark-600"
         />
+        {/* Outer glow circle */}
+        <motion.circle
+          cx="75"
+          cy="75"
+          r={radius + 4}
+          fill="none"
+          stroke={color}
+          strokeWidth="1"
+          strokeDasharray="8 4"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: [0.3, 0.6, 0.3], rotate: 360 }}
+          transition={{ duration: 3, repeat: Infinity }}
+          style={{ transformOrigin: "center" }}
+        />
         {/* Progress circle */}
         <motion.circle
           cx="75"
           cy="75"
           r={radius}
           fill="none"
-          stroke={color}
-          strokeWidth="8"
+          stroke={`url(#confidenceGradient)`}
+          strokeWidth="10"
           strokeLinecap="round"
           initial={{ strokeDashoffset: circumference }}
           animate={{ strokeDashoffset }}
           transition={{ duration: 1, delay: 0.5, ease: "easeOut" }}
           style={{
             strokeDasharray: circumference,
-            filter: `drop-shadow(0 0 10px ${color}50)`,
+            filter: `drop-shadow(0 0 15px ${color}80)`,
           }}
         />
+        {/* Gradient definition */}
+        <defs>
+          <linearGradient
+            id="confidenceGradient"
+            x1="0%"
+            y1="0%"
+            x2="100%"
+            y2="100%">
+            <stop offset="0%" stopColor={color} />
+            <stop offset="100%" stopColor={secondaryColor} />
+          </linearGradient>
+        </defs>
       </svg>
-      {/* Center text */}
+
+      {/* Center content */}
       <div className="absolute inset-0 flex flex-col items-center justify-center">
+        {/* Glowing background */}
+        <motion.div
+          className="absolute w-16 h-16 rounded-full blur-lg"
+          style={{ backgroundColor: color }}
+          animate={{ opacity: [0.1, 0.2, 0.1] }}
+          transition={{ duration: 1.5, repeat: Infinity }}
+        />
         <motion.span
           initial={{ opacity: 0, scale: 0.5 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.8 }}
-          className="text-3xl font-bold"
-          style={{ color }}>
+          className="text-4xl font-bold relative"
+          style={{ color, textShadow: `0 0 20px ${color}60` }}>
           {confidence}%
         </motion.span>
-        <span className="text-xs text-dark-500 dark:text-light-400">
+        <span className="text-xs text-dark-500 dark:text-light-400 font-medium tracking-wider uppercase">
           Confidence
         </span>
       </div>
+
+      {/* Orbiting dot */}
+      <motion.div
+        className="absolute w-2 h-2 rounded-full"
+        style={{
+          backgroundColor: color,
+          boxShadow: `0 0 10px ${color}`,
+          left: "50%",
+          top: "50%",
+          marginLeft: "-4px",
+          marginTop: "-4px",
+        }}
+        animate={{
+          x: [
+            0,
+            radius * Math.cos(0),
+            radius * Math.cos(Math.PI / 2),
+            radius * Math.cos(Math.PI),
+            radius * Math.cos((3 * Math.PI) / 2),
+            0,
+          ],
+          y: [
+            0,
+            radius * Math.sin(0),
+            radius * Math.sin(Math.PI / 2),
+            radius * Math.sin(Math.PI),
+            radius * Math.sin((3 * Math.PI) / 2),
+            0,
+          ],
+        }}
+        transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+      />
     </div>
   );
 }
