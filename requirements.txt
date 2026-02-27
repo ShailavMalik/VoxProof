@@ -14,7 +14,7 @@ numpy>=1.24.0,<2.0.0
 --extra-index-url https://download.pytorch.org/whl/cpu
 torch==2.2.2+cpu
 torchaudio==2.2.2+cpu
-transformers>=4.35.0
+transformers==4.44.2
 
 # Validation
 pydantic>=2.5.0
