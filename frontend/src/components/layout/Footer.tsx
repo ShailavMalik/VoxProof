@@ -28,20 +28,6 @@ export function Footer() {
           <p className="text-sm text-dark-500 dark:text-light-400">
             VoxProof © {currentYear}
           </p>
-
-          {/* Links */}
-          <div className="flex items-center gap-6">
-            <a
-              href="#"
-              className="text-sm text-dark-500 dark:text-light-400 hover:text-neon-cyan transition-colors">
-              Privacy
-            </a>
-            <a
-              href="#"
-              className="text-sm text-dark-500 dark:text-light-400 hover:text-neon-cyan transition-colors">
-              Terms
-            </a>
-          </div>
         </div>
       </motion.div>
     </footer>

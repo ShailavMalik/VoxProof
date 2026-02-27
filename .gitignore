@@ -49,9 +49,8 @@ env/
 *.log
 logs/
 
-# Deprecated deployment files (Railway is primary)
+# Deprecated deployment files
 Procfile
-render.yaml
 
 # PDF documents (not needed in repo)
 *.pdf

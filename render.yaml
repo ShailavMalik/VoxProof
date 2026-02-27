@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: voxproof-api
+    env: docker
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /health
+    envVars:
+      - key: API_KEY
+        sync: false
+      - key: PRODUCTION
+        value: "true"
+    scaling:
+      minInstances: 0
+      maxInstances: 3

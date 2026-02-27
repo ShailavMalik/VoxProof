@@ -28,28 +28,24 @@ const staggerContainer = {
 const teamMembers = [
   {
     name: "Shailav Malik",
-    role: "Team Lead & ML Engineer",
     linkedin: "https://linkedin.com/in/shailavmalik",
     gradient: "from-neon-cyan to-neon-blue",
     image: "/img/shailav.png",
   },
   {
     name: "Ritika Sharma",
-    role: "Frontend Developer",
     linkedin: "https://www.linkedin.com/in/ritika-sharma-012979398/",
     gradient: "from-neon-purple to-neon-pink",
     image: "/img/ritika.png",
   },
   {
     name: "Sarthak Vats",
-    role: "Architecture Design",
     linkedin: "https://www.linkedin.com/in/sarthak-vats-301a3a358/",
     gradient: "from-neon-cyan to-neon-purple",
     image: "/img/sarthak.png",
   },
   {
     name: "Tarun Kumar",
-    role: "ML & Data Engineer",
     linkedin: "https://www.linkedin.com/in/tarun-kumar-7238b1367/",
     gradient: "from-neon-pink to-neon-cyan",
     image: "/img/tarun.png",
@@ -106,6 +102,56 @@ export default function AboutPage() {
             An advanced AI voice forensics system designed to combat audio fraud
             and deepfake technology.
           </p>
+        </motion.div>
+
+        {/* Team Section */}
+        <motion.div variants={fadeInUp} className="mb-16">
+          <div className="text-center mb-12">
+            <h2 className="text-2xl md:text-3xl font-bold mb-4">
+              Meet <span className="neon-text">Meerut Coders</span>
+            </h2>
+            <p className="text-dark-500 dark:text-light-400">
+              The talented team behind VoxProof
+            </p>
+          </div>
+
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {teamMembers.map((member) => (
+              <motion.div
+                key={member.name}
+                variants={fadeInUp}
+                whileHover={{ y: -5 }}
+                className="glass-card-hover p-6 text-center group">
+                <div className="relative mb-6">
+                  <div className="relative w-24 h-24 mx-auto rounded-full overflow-hidden ring-2 ring-transparent group-hover:ring-neon-cyan/50 shadow-lg group-hover:shadow-neon-glow transition-all duration-300">
+                    <div
+                      className={`absolute -inset-0.5 bg-gradient-to-br ${member.gradient} rounded-full opacity-0 group-hover:opacity-100 transition-opacity blur-sm`}
+                    />
+                    <img
+                      src={member.image}
+                      alt={member.name}
+                      className="relative w-full h-full object-cover rounded-full"
+                    />
+                  </div>
+                  <motion.div
+                    className={`absolute inset-0 rounded-full bg-gradient-to-br ${member.gradient} blur-xl opacity-0 group-hover:opacity-30 transition-opacity`}
+                  />
+                </div>
+
+                <h3 className="font-semibold text-lg mb-4">{member.name}</h3>
+
+                <a
+                  href={member.linkedin}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#0077B5]/10 text-[#0077B5] hover:bg-[#0077B5]/20 transition-colors text-sm">
+                  <Linkedin className="w-4 h-4" />
+                  LinkedIn
+                  <ExternalLink className="w-3 h-3" />
+                </a>
+              </motion.div>
+            ))}
+          </div>
         </motion.div>
 
         {/* Project Info */}
@@ -168,83 +214,6 @@ export default function AboutPage() {
                     {feature.description}
                   </p>
                 </div>
-              </motion.div>
-            ))}
-          </div>
-        </motion.div>
-
-        {/* Team Section */}
-        <motion.div variants={fadeInUp}>
-          <div className="text-center mb-12">
-            <h2 className="text-2xl md:text-3xl font-bold mb-4">
-              Meet <span className="neon-text">Meerut Coders</span>
-            </h2>
-            <p className="text-dark-500 dark:text-light-400">
-              The talented team behind VoxProof
-            </p>
-          </div>
-
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {teamMembers.map((member) => (
-              <motion.div
-                key={member.name}
-                variants={fadeInUp}
-                whileHover={{ y: -5 }}
-                className="glass-card-hover p-6 text-center group">
-                {/* Avatar with Image */}
-                <div className="relative mb-6">
-                  <div
-                    className={`
-                      relative w-24 h-24 mx-auto rounded-full overflow-hidden
-                      ring-2 ring-transparent group-hover:ring-neon-cyan/50
-                      shadow-lg group-hover:shadow-neon-glow transition-all duration-300
-                    `}>
-                    {/* Gradient border effect */}
-                    <div
-                      className={`absolute -inset-0.5 bg-gradient-to-br ${member.gradient} rounded-full opacity-0 group-hover:opacity-100 transition-opacity blur-sm`}
-                    />
-                    <img
-                      src={member.image}
-                      alt={member.name}
-                      className="relative w-full h-full object-cover rounded-full"
-                      onError={(e) => {
-                        // Fallback to initials if image fails to load
-                        const target = e.target as HTMLImageElement;
-                        target.style.display = "none";
-                        const parent = target.parentElement;
-                        if (parent) {
-                          parent.innerHTML = `<div class="w-full h-full flex items-center justify-center text-2xl font-bold text-white bg-gradient-to-br ${member.gradient}">${member.name
-                            .split(" ")
-                            .map((n) => n[0])
-                            .join("")}</div>`;
-                        }
-                      }}
-                    />
-                  </div>
-                  <motion.div
-                    className={`
-                      absolute inset-0 rounded-full bg-gradient-to-br ${member.gradient}
-                      blur-xl opacity-0 group-hover:opacity-30 transition-opacity
-                    `}
-                  />
-                </div>
-
-                {/* Info */}
-                <h3 className="font-semibold text-lg mb-1">{member.name}</h3>
-                <p className="text-sm text-dark-500 dark:text-light-400 mb-4">
-                  {member.role}
-                </p>
-
-                {/* LinkedIn Link */}
-                <a
-                  href={member.linkedin}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#0077B5]/10 text-[#0077B5] hover:bg-[#0077B5]/20 transition-colors text-sm">
-                  <Linkedin className="w-4 h-4" />
-                  LinkedIn
-                  <ExternalLink className="w-3 h-3" />
-                </a>
               </motion.div>
             ))}
           </div>
