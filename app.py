@@ -20,7 +20,7 @@ from fastapi import Depends, FastAPI, Header, HTTPException, status, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field, field_validator
-from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.types import ASGIApp, Receive, Scope, Send
 
 # Load environment variables
 load_dotenv()
@@ -252,7 +252,7 @@ class ErrorResponse(BaseModel):
 async def lifespan(app: FastAPI):
     """
     Application lifespan handler.
-    Startup is fast - models load lazily on first request.
+    Pre-loads models on startup to avoid timeout on first request.
     """
     if not IS_PRODUCTION:
         logger.info("\n" + "=" * 70)
@@ -266,16 +266,27 @@ async def lifespan(app: FastAPI):
         logger.warning("⚠️  Run 'python train.py' to train with real data!")
         create_dummy_weights(config.MODEL_PATH)
     
-    # DON'T load models here - defer to first request for fast healthcheck
-    # Models will be loaded lazily when get_model() and get_processor() are called
+    # Pre-load models on startup to prevent timeout on first request
+    try:
+        logger.info("Pre-loading models on startup (this may take a minute)...")
+        processor = get_processor(sample_rate=config.SAMPLE_RATE)
+        model = get_model(
+            classifier_path=config.MODEL_PATH,
+            wav2vec_model_name=config.WAV2VEC_MODEL
+        )
+        # Actually trigger model loading (Wav2Vec2 + classifier weights)
+        model.load()
+        logger.info("✓ All models pre-loaded and ready")
+    except Exception as e:
+        logger.error(f"⚠️  Failed to pre-load models: {e}")
+        logger.error("⚠️  Models will attempt to load on first request (may timeout)")
     
     if IS_PRODUCTION:
-        logger.info("VoxProof API Started - Models will load on first request")
+        logger.info("VoxProof API Started - Models pre-loaded")
     else:
         logger.info("=" * 70)
         logger.info("✅ VoxProof API Started!")
-        logger.info("⏳ Models will load on first request (cold start)")
-        logger.info(f"🔑 API Key: {'Configured ✓' if config.API_KEY else 'NOT SET ✗'}")
+        logger.info("🔑 API Key: " + ("Configured ✓" if config.API_KEY else "NOT SET ✗"))
         logger.info(f"🤖 Model: {config.MODEL_PATH}")
         logger.info(f"🎵 Sample Rate: {config.SAMPLE_RATE} Hz")
         logger.info(f"📡 Access the API at: http://localhost:8000")
@@ -315,31 +326,47 @@ app.add_middleware(
 # Request Timeout Middleware
 # ============================================================================
 
-REQUEST_TIMEOUT = 90  # 90 second timeout for requests
+REQUEST_TIMEOUT = 120  # 120 second timeout for requests
 
 
-class TimeoutMiddleware(BaseHTTPMiddleware):
-    """Middleware to add timeout to requests."""
+class TimeoutMiddleware:
+    """
+    Pure ASGI timeout middleware.
     
-    async def dispatch(self, request: Request, call_next):
+    Unlike BaseHTTPMiddleware (which buffers the entire request/response through
+    an internal task bridge and adds significant overhead), this is a thin ASGI
+    wrapper that only adds a timeout without interfering with the data flow.
+    """
+    
+    def __init__(self, app: ASGIApp, timeout: float = REQUEST_TIMEOUT):
+        self.app = app
+        self.timeout = timeout
+    
+    async def __call__(self, scope: Scope, receive: Receive, send: Send):
+        if scope["type"] != "http":
+            await self.app(scope, receive, send)
+            return
+        
         try:
-            return await asyncio.wait_for(
-                call_next(request),
-                timeout=REQUEST_TIMEOUT
+            await asyncio.wait_for(
+                self.app(scope, receive, send),
+                timeout=self.timeout
             )
         except asyncio.TimeoutError:
-            logger.error(f"Request timeout after {REQUEST_TIMEOUT}s: {request.url.path}")
-            return JSONResponse(
+            path = scope.get("path", "unknown")
+            logger.error(f"Request timeout after {self.timeout}s: {path}")
+            response = JSONResponse(
                 status_code=504,
                 content={
                     "status": "error",
                     "message": "Request processing timeout",
-                    "detail": f"Request took longer than {REQUEST_TIMEOUT} seconds. Try with shorter audio."
+                    "detail": f"Request took longer than {int(self.timeout)} seconds. Try with shorter audio."
                 }
             )
+            await response(scope, receive, send)
 
 
-app.add_middleware(TimeoutMiddleware)
+app.add_middleware(TimeoutMiddleware, timeout=REQUEST_TIMEOUT)
 
 
 # Thread pool for CPU-intensive operations
