@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
 import { Shield } from "lucide-react";
 
 export function Footer() {
@@ -16,11 +17,16 @@ export function Footer() {
         viewport={{ once: true }}
         className="max-w-7xl mx-auto px-4 py-8">
         <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-          {/* Logo */}
+          {/* Logo and Branding */}
           <div className="flex items-center gap-2">
             <Shield className="w-5 h-5 text-neon-cyan" />
             <span className="text-sm font-medium text-dark-600 dark:text-light-300">
-              VoxProof
+              VoxProof by{" "}
+              <Link
+                to="/about#team"
+                className="text-neon-cyan hover:text-neon-purple transition-colors font-semibold">
+                Meerut Coders
+              </Link>
             </span>
           </div>
 

@@ -8,10 +8,8 @@ import {
   Fingerprint,
   Code,
   Award,
-  Zap,
   Radio,
   TrendingUp,
-  Layers,
   Database,
   AlertTriangle,
   CheckCircle,
@@ -35,16 +33,16 @@ const staggerContainer = {
 
 const teamMembers = [
   {
-    name: "Shailav Malik",
-    linkedin: "https://linkedin.com/in/shailavmalik",
-    gradient: "from-neon-cyan to-neon-blue",
-    image: "/img/shailav.png",
-  },
-  {
     name: "Ritika Sharma",
     linkedin: "https://www.linkedin.com/in/ritika-sharma-012979398/",
     gradient: "from-neon-purple to-neon-pink",
     image: "/img/ritika.png",
+  },
+  {
+    name: "Shailav Malik",
+    linkedin: "https://linkedin.com/in/shailavmalik",
+    gradient: "from-neon-cyan to-neon-blue",
+    image: "/img/shailav.png",
   },
   {
     name: "Sarthak Vats",
@@ -148,15 +146,32 @@ export default function AboutPage() {
 
                 <h3 className="font-semibold text-lg mb-4">{member.name}</h3>
 
-                <a
+                <motion.a
                   href={member.linkedin}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#0077B5]/10 text-[#0077B5] hover:bg-[#0077B5]/20 transition-colors text-sm">
-                  <Linkedin className="w-4 h-4" />
-                  LinkedIn
-                  <ExternalLink className="w-3 h-3" />
-                </a>
+                  whileHover={{ scale: 1.08, y: -2 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg relative group overflow-hidden">
+                  {/* Animated gradient border background */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-neon-cyan via-neon-purple to-neon-pink rounded-lg opacity-75 group-hover:opacity-100 transition-opacity duration-300 animate-pulse" />
+                  {/* Glow effect */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-neon-cyan to-neon-purple rounded-lg blur-xl opacity-0 group-hover:opacity-50 transition-opacity duration-300" />
+                  {/* Button content */}
+                  <div className="relative flex items-center gap-2 px-3 py-1.5 bg-dark-900/90 dark:bg-dark-800/90 group-hover:bg-dark-850/95 rounded-md transition-colors text-neon-cyan group-hover:text-neon-purple text-sm font-medium">
+                    <motion.div
+                      animate={{ rotate: [0, 5, -5, 0] }}
+                      transition={{ duration: 2, repeat: Infinity }}>
+                      <Linkedin className="w-4 h-4" />
+                    </motion.div>
+                    LinkedIn
+                    <motion.div
+                      animate={{ x: [0, 2, 0] }}
+                      transition={{ duration: 1.5, repeat: Infinity }}>
+                      <ExternalLink className="w-3 h-3" />
+                    </motion.div>
+                  </div>
+                </motion.a>
               </motion.div>
             ))}
           </div>
@@ -213,6 +228,124 @@ export default function AboutPage() {
             </p>
           </div>
 
+          {/* Animated Visualization Section */}
+          <div className="mb-12 glass-card p-8 overflow-hidden">
+            <div className="grid md:grid-cols-2 gap-8 items-center">
+              {/* Audio Waveform Visualization */}
+              <motion.div>
+                <h3 className="font-semibold mb-4 text-neon-cyan">
+                  Real-Time Analysis
+                </h3>
+                <div className="h-40 bg-dark-800 dark:bg-dark-900 rounded-lg p-4 flex items-center justify-center gap-1 border border-neon-cyan/20 overflow-hidden">
+                  {Array.from({ length: 40 }).map((_, i) => (
+                    <motion.div
+                      key={i}
+                      className="flex-1 bg-gradient-to-t from-neon-cyan to-neon-purple rounded-sm"
+                      animate={{
+                        height: [
+                          `${Math.random() * 100}%`,
+                          `${Math.random() * 100}%`,
+                          `${Math.random() * 100}%`,
+                        ],
+                      }}
+                      transition={{
+                        duration: 0.8,
+                        repeat: Infinity,
+                        delay: i * 0.02,
+                      }}
+                    />
+                  ))}
+                </div>
+                <p className="text-sm text-dark-400 dark:text-light-500 mt-3">
+                  Audio signal decomposition into frequency components
+                </p>
+              </motion.div>
+
+              {/* Feature Space Visualization */}
+              <motion.div>
+                <h3 className="font-semibold mb-4 text-neon-purple">
+                  Feature Space (798D)
+                </h3>
+                <div className="grid grid-cols-8 gap-2 p-4 bg-dark-800 dark:bg-dark-900 rounded-lg border border-neon-purple/20">
+                  {Array.from({ length: 64 }).map((_, i) => (
+                    <motion.div
+                      key={i}
+                      className="aspect-square rounded-md bg-gradient-to-br from-neon-cyan/30 to-neon-purple/30 border border-neon-purple/40"
+                      animate={{
+                        opacity: [0.3, 1, 0.3],
+                        backgroundColor: [
+                          "rgba(0, 255, 255, 0.1)",
+                          "rgba(168, 85, 247, 0.2)",
+                          "rgba(0, 255, 255, 0.1)",
+                        ],
+                      }}
+                      transition={{
+                        duration: 2,
+                        repeat: Infinity,
+                        delay: Math.random() * 2,
+                      }}
+                    />
+                  ))}
+                </div>
+                <p className="text-sm text-dark-400 dark:text-light-500 mt-3">
+                  Extracted acoustic and neural embeddings
+                </p>
+              </motion.div>
+            </div>
+
+            {/* Classification Result Display */}
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5 }}
+              className="mt-8 p-6 bg-gradient-to-r from-neon-cyan/10 to-neon-purple/10 rounded-lg border border-neon-cyan/30">
+              <div className="grid md:grid-cols-2 gap-6">
+                <div className="text-center">
+                  <div className="flex justify-center mb-3">
+                    <motion.div
+                      className="w-12 h-12 rounded-full bg-gradient-to-br from-verdict-ai-primary to-red-500 flex items-center justify-center text-white font-bold"
+                      animate={{
+                        boxShadow: [
+                          "0 0 0px rgba(255,0,0,0.5)",
+                          "0 0 20px rgba(255,0,0,0.3)",
+                        ],
+                      }}
+                      transition={{ duration: 1.5, repeat: Infinity }}>
+                      AI
+                    </motion.div>
+                  </div>
+                  <p className="text-dark-500 dark:text-light-400 text-sm">
+                    If AI is detected
+                  </p>
+                  <div className="mt-3 p-2 bg-verdict-ai-primary/10 rounded text-xs text-verdict-ai-primary border border-verdict-ai-primary/30">
+                    High confidence score with explainable features
+                  </div>
+                </div>
+                <div className="text-center">
+                  <div className="flex justify-center mb-3">
+                    <motion.div
+                      className="w-12 h-12 rounded-full bg-gradient-to-br from-verdict-human-primary to-green-500 flex items-center justify-center text-white font-bold"
+                      animate={{
+                        boxShadow: [
+                          "0 0 0px rgba(34,197,94,0.5)",
+                          "0 0 20px rgba(34,197,94,0.3)",
+                        ],
+                      }}
+                      transition={{ duration: 1.5, repeat: Infinity }}>
+                      Human
+                    </motion.div>
+                  </div>
+                  <p className="text-dark-500 dark:text-light-400 text-sm">
+                    If Human is detected
+                  </p>
+                  <div className="mt-3 p-2 bg-verdict-human-primary/10 rounded text-xs text-verdict-human-primary border border-verdict-human-primary/30">
+                    Natural voice markers confirmed
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+
           {/* Detection Pipeline */}
           <div className="grid md:grid-cols-4 gap-4 mb-12">
             {[
@@ -246,7 +379,7 @@ export default function AboutPage() {
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.1 }}
-                viewPort={{ once: true }}
+                viewport={{ once: true }}
                 className="relative group">
                 {/* Connecting line */}
                 {i < 3 && (

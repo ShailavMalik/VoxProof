@@ -23,9 +23,8 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     const stored = localStorage.getItem("voxproof-theme") as Theme | null;
     if (stored) {
       setThemeState(stored);
-    } else if (window.matchMedia("(prefers-color-scheme: light)").matches) {
-      setThemeState("light");
     }
+    // Dark theme is default, no system preference check
   }, []);
 
   useEffect(() => {
