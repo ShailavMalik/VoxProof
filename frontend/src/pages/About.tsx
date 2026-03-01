@@ -8,6 +8,14 @@ import {
   Fingerprint,
   Code,
   Award,
+  Zap,
+  Radio,
+  TrendingUp,
+  Layers,
+  Database,
+  AlertTriangle,
+  CheckCircle,
+  Sparkles,
 } from "lucide-react";
 
 const fadeInUp = {
@@ -190,6 +198,367 @@ export default function AboutPage() {
                 </div>
               </div>
             </div>
+          </div>
+        </motion.div>
+
+        {/* How Detection Works - Futuristic Section */}
+        <motion.div variants={fadeInUp} className="mb-16 relative">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">
+              How <span className="neon-text">Detection</span> Works
+            </h2>
+            <p className="text-dark-500 dark:text-light-400 max-w-2xl mx-auto">
+              Our AI analyzes 798 acoustic features to detect synthetic voices
+              with 95%+ accuracy
+            </p>
+          </div>
+
+          {/* Detection Pipeline */}
+          <div className="grid md:grid-cols-4 gap-4 mb-12">
+            {[
+              {
+                icon: Radio,
+                title: "Audio Input",
+                desc: "MP3, WAV, FLAC",
+                color: "from-neon-cyan",
+              },
+              {
+                icon: Waves,
+                title: "Feature Extract",
+                desc: "798 dimensions",
+                color: "from-neon-purple",
+              },
+              {
+                icon: Brain,
+                title: "Neural Network",
+                desc: "ResNet + Wav2Vec2",
+                color: "from-neon-pink",
+              },
+              {
+                icon: CheckCircle,
+                title: "Classification",
+                desc: "AI or Human",
+                color: "from-verdict-human-primary",
+              },
+            ].map((step, i) => (
+              <motion.div
+                key={step.title}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.1 }}
+                viewPort={{ once: true }}
+                className="relative group">
+                {/* Connecting line */}
+                {i < 3 && (
+                  <div className="absolute -right-2 top-1/2 w-4 h-0.5 bg-gradient-to-r from-neon-cyan/50 to-transparent hidden md:block" />
+                )}
+
+                <div className="glass-card p-6 text-center relative overflow-hidden">
+                  {/* Glow background */}
+                  <motion.div
+                    className={`absolute inset-0 bg-gradient-to-br ${step.color} via-transparent opacity-0 group-hover:opacity-10 transition-opacity`}
+                  />
+
+                  {/* Icon with animation */}
+                  <motion.div
+                    animate={{ y: [0, -8, 0] }}
+                    transition={{
+                      duration: 2,
+                      repeat: Infinity,
+                      delay: i * 0.2,
+                    }}
+                    className="relative mb-4 flex justify-center">
+                    <div
+                      className={`p-3 rounded-xl bg-gradient-to-br ${step.color} to-transparent text-white`}>
+                      <step.icon className="w-8 h-8" />
+                    </div>
+                  </motion.div>
+
+                  <h3 className="font-bold mb-2">{step.title}</h3>
+                  <p className="text-xs text-dark-400 dark:text-light-500">
+                    {step.desc}
+                  </p>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+
+          {/* AI Detection Signals */}
+          <div className="grid md:grid-cols-2 gap-6 mb-12">
+            {/* AI Indicators */}
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              className="glass-card p-8 border-l-4 border-verdict-ai-primary">
+              <div className="flex items-center gap-3 mb-6">
+                <AlertTriangle className="w-6 h-6 text-verdict-ai-primary" />
+                <h3 className="text-xl font-bold text-verdict-ai-primary">
+                  AI Voice Signals
+                </h3>
+              </div>
+
+              <div className="space-y-4">
+                {[
+                  {
+                    pattern: "2x Lower Pitch Jitter",
+                    desc: "AI voices lack natural micro-variations",
+                  },
+                  {
+                    pattern: "95%+ Smooth Transitions",
+                    desc: "No articulatory gaps between phonemes",
+                  },
+                  {
+                    pattern: "Flat Energy Envelope",
+                    desc: "Unnaturally consistent volume",
+                  },
+                  {
+                    pattern: "Low MFCC Variance",
+                    desc: "Timbre too consistent over time",
+                  },
+                  {
+                    pattern: "Perfect Timing",
+                    desc: "No natural speech hesitations or fillers",
+                  },
+                  {
+                    pattern: "Robotic Spectral Profile",
+                    desc: "Missing natural formant patterns",
+                  },
+                ].map((signal, i) => (
+                  <motion.div
+                    key={signal.pattern}
+                    initial={{ opacity: 0, x: -10 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    transition={{ delay: i * 0.05 }}
+                    viewport={{ once: true }}
+                    className="flex gap-3">
+                    <motion.div
+                      animate={{ scale: [1, 1.2, 1] }}
+                      transition={{
+                        duration: 1.5,
+                        repeat: Infinity,
+                        delay: i * 0.1,
+                      }}
+                      className="w-2 h-2 rounded-full bg-verdict-ai-primary flex-shrink-0 mt-1.5"
+                    />
+                    <div>
+                      <p className="font-semibold text-sm text-light-300">
+                        {signal.pattern}
+                      </p>
+                      <p className="text-xs text-dark-400 dark:text-light-500">
+                        {signal.desc}
+                      </p>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </motion.div>
+
+            {/* Human Indicators */}
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              className="glass-card p-8 border-l-4 border-verdict-human-primary">
+              <div className="flex items-center gap-3 mb-6">
+                <CheckCircle className="w-6 h-6 text-verdict-human-primary" />
+                <h3 className="text-xl font-bold text-verdict-human-primary">
+                  Human Voice Signals
+                </h3>
+              </div>
+
+              <div className="space-y-4">
+                {[
+                  {
+                    pattern: "5-8% Pitch Jitter",
+                    desc: "Natural vocal cord vibrations",
+                  },
+                  {
+                    pattern: "Variable Transitions",
+                    desc: "Natural speech discontinuities",
+                  },
+                  {
+                    pattern: "Dynamic Energy",
+                    desc: "Breathing, emphasis, emotion",
+                  },
+                  { pattern: "High MFCC Delta", desc: "Rich timbre evolution" },
+                  {
+                    pattern: "Natural Hesitations",
+                    desc: "Ums, ahs, pauses, breathing",
+                  },
+                  {
+                    pattern: "Complex Spectral Profile",
+                    desc: "Formants, harmonics, noise",
+                  },
+                ].map((signal, i) => (
+                  <motion.div
+                    key={signal.pattern}
+                    initial={{ opacity: 0, x: 10 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    transition={{ delay: i * 0.05 }}
+                    viewport={{ once: true }}
+                    className="flex gap-3">
+                    <motion.div
+                      animate={{ scale: [1, 1.2, 1] }}
+                      transition={{
+                        duration: 1.5,
+                        repeat: Infinity,
+                        delay: i * 0.1,
+                      }}
+                      className="w-2 h-2 rounded-full bg-verdict-human-primary flex-shrink-0 mt-1.5"
+                    />
+                    <div>
+                      <p className="font-semibold text-sm text-light-300">
+                        {signal.pattern}
+                      </p>
+                      <p className="text-xs text-dark-400 dark:text-light-500">
+                        {signal.desc}
+                      </p>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </motion.div>
+          </div>
+        </motion.div>
+
+        {/* Training Data Statistics */}
+        <motion.div variants={fadeInUp} className="mb-16 relative">
+          <motion.div
+            className="absolute -inset-0.5 bg-gradient-to-r from-neon-cyan/20 via-neon-purple/20 to-neon-cyan/20 rounded-2xl blur-xl opacity-50"
+            animate={{ opacity: [0.3, 0.5, 0.3] }}
+            transition={{ duration: 3, repeat: Infinity }}
+          />
+
+          <div className="relative glass-card p-8 md:p-12 overflow-hidden">
+            {/* Corner decorations */}
+            <div className="absolute top-2 left-2 w-6 h-6 border-l-2 border-t-2 border-neon-cyan/40 rounded-tl-lg" />
+            <div className="absolute top-2 right-2 w-6 h-6 border-r-2 border-t-2 border-neon-purple/40 rounded-tr-lg" />
+
+            <div className="relative z-10">
+              <div className="flex items-center gap-3 mb-8">
+                <Database className="w-8 h-8 text-neon-cyan" />
+                <h2 className="text-2xl md:text-3xl font-bold">
+                  Trained on <span className="neon-text">Real Data</span>
+                </h2>
+              </div>
+
+              <div className="grid md:grid-cols-3 gap-8 mb-12">
+                {/* AI Samples */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  className="text-center">
+                  <motion.div
+                    animate={{ scale: [1, 1.05, 1] }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                    className="text-5xl font-bold mb-2 bg-gradient-to-r from-verdict-ai-primary to-red-500 bg-clip-text text-transparent">
+                    650+
+                  </motion.div>
+                  <p className="text-dark-400 dark:text-light-500 mb-3">
+                    AI Generated Samples
+                  </p>
+                  <p className="text-sm text-dark-500 dark:text-light-600">
+                    ElevenLabs, Coqui, pyttsx3, Google TTS and more
+                  </p>
+                </motion.div>
+
+                {/* Human Samples */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1 }}
+                  viewport={{ once: true }}
+                  className="text-center">
+                  <motion.div
+                    animate={{ scale: [1, 1.05, 1] }}
+                    transition={{ duration: 2, repeat: Infinity, delay: 0.2 }}
+                    className="text-5xl font-bold mb-2 bg-gradient-to-r from-verdict-human-primary to-green-500 bg-clip-text text-transparent">
+                    450+
+                  </motion.div>
+                  <p className="text-dark-400 dark:text-light-500 mb-3">
+                    Human Voice Samples
+                  </p>
+                  <p className="text-sm text-dark-500 dark:text-light-600">
+                    Common Voice (Mozilla), diverse speakers & languages
+                  </p>
+                </motion.div>
+
+                {/* Languages */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2 }}
+                  viewport={{ once: true }}
+                  className="text-center">
+                  <motion.div
+                    animate={{ scale: [1, 1.05, 1] }}
+                    transition={{ duration: 2, repeat: Infinity, delay: 0.4 }}
+                    className="text-5xl font-bold mb-2 bg-gradient-to-r from-neon-cyan to-neon-purple bg-clip-text text-transparent">
+                    5
+                  </motion.div>
+                  <p className="text-dark-400 dark:text-light-500 mb-3">
+                    Supported Languages
+                  </p>
+                  <p className="text-sm text-dark-500 dark:text-light-600">
+                    English, Hindi, Tamil, Telugu, Malayalam
+                  </p>
+                </motion.div>
+              </div>
+
+              {/* Training Approach */}
+              <div className="grid md:grid-cols-2 gap-6">
+                {[
+                  {
+                    title: "Data Augmentation",
+                    items: [
+                      "Noise injection",
+                      "Time masking",
+                      "Speed/pitch shift",
+                      "Volume normalization",
+                    ],
+                    icon: Sparkles,
+                  },
+                  {
+                    title: "Model Optimization",
+                    items: [
+                      "Focal Loss training",
+                      "Mixup regularization",
+                      "Cosine annealing",
+                      "Early stopping",
+                    ],
+                    icon: TrendingUp,
+                  },
+                ].map((section, i) => (
+                  <motion.div
+                    key={section.title}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ delay: i * 0.15 }}
+                    viewport={{ once: true }}
+                    className="p-6 rounded-xl bg-white/5 border border-white/10 backdrop-blur">
+                    <div className="flex items-center gap-2 mb-4">
+                      <section.icon className="w-5 h-5 text-neon-cyan" />
+                      <h3 className="font-semibold">{section.title}</h3>
+                    </div>
+                    <ul className="space-y-2">
+                      {section.items.map((item) => (
+                        <li
+                          key={item}
+                          className="text-sm text-dark-400 dark:text-light-500 pl-4 border-l-2 border-neon-cyan/30">
+                          {item}
+                        </li>
+                      ))}
+                    </ul>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+
+            {/* Bottom corner decorations */}
+            <div className="absolute bottom-2 left-2 w-6 h-6 border-l-2 border-b-2 border-neon-purple/40 rounded-bl-lg" />
+            <div className="absolute bottom-2 right-2 w-6 h-6 border-r-2 border-b-2 border-neon-cyan/40 rounded-br-lg" />
           </div>
         </motion.div>
 

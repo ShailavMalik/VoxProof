@@ -3,7 +3,7 @@
 > **Detect AI-generated voices in real-time** - Built for the AI Impact Buildathon 2026
 
 [![Live Frontend](https://img.shields.io/badge/Frontend-Vercel-black)](https://voxproof.vercel.app)
-[![Live API](https://img.shields.io/badge/API-Render-blueviolet)](https://voxproof-api.onrender.com)
+[![Live API](https://img.shields.io/badge/API-Railway-blueviolet)](https://voxproof-api.up.railway.app)
 [![Python 3.11](https://img.shields.io/badge/Python-3.11-blue)](https://python.org)
 [![Vite](https://img.shields.io/badge/Vite-5-646CFF)](https://vitejs.dev)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.110-green)](https://fastapi.tiangolo.com)
@@ -13,12 +13,13 @@
 
 ## 🌐 Live Demo
 
-| Resource              | URL                                                                                  |
-| --------------------- | ------------------------------------------------------------------------------------ |
-| **Frontend App**      | [https://voxproof.vercel.app](https://voxproof.vercel.app)                           |
-| **API Endpoint**      | `https://voxproof-api.onrender.com/api/voice-detection`                              |
-| **API Documentation** | [https://voxproof-api.onrender.com/docs](https://voxproof-api.onrender.com/docs)     |
-| **Health Check**      | [https://voxproof-api.onrender.com/health](https://voxproof-api.onrender.com/health) |
+| Resource              | URL                                                                                      |
+| --------------------- | ---------------------------------------------------------------------------------------- |
+| **Frontend App**      | [https://voxproof.vercel.app](https://voxproof.vercel.app)                               |
+| **API Documentation** | [https://voxproof-api.up.railway.app/docs](https://voxproof-api.up.railway.app/docs)     |
+| **Health Check**      | [https://voxproof-api.up.railway.app/health](https://voxproof-api.up.railway.app/health) |
+
+> **Try it out:** Don't have audio? The dashboard includes **sample audio clips** (both AI-generated and real human voices) you can play and analyze instantly.
 
 ---
 
@@ -44,6 +45,7 @@ AI voice cloning tools (ElevenLabs, OpenAI, etc.) make it trivially easy to impe
 - 📱 **Fully Responsive** for all devices
 - 🔊 **Drag & Drop Upload** for audio files
 - 📊 **Animated Results** with confidence visualization
+- 🎧 **Demo Sample Library** - Play and analyze pre-loaded AI & human voice clips
 
 ### Backend
 
@@ -52,6 +54,7 @@ AI voice cloning tools (ElevenLabs, OpenAI, etc.) make it trivially easy to impe
 - ⚡ **Fast Inference** (2-8 seconds per file)
 - 🔐 **API Key Authentication**
 - 📝 **Detailed Explanations** for each verdict
+- 🚀 **Optimized Cold Start** - Models pre-loaded at startup
 
 ---
 
@@ -101,39 +104,44 @@ Input (798) → Linear(512) → ResBlock(512) → ResBlock(256) → ResBlock(128
 
 ```
 VoxProof/
-├── frontend/                   # React + Vite Frontend Application
+├── frontend/                       # React + Vite Frontend
 │   ├── src/
-│   │   ├── main.tsx            # Entry point
-│   │   ├── App.tsx             # Root component with routes
+│   │   ├── main.tsx                # Entry point
+│   │   ├── App.tsx                 # Root component with routes
 │   │   ├── pages/
-│   │   │   ├── Home.tsx        # Landing page
-│   │   │   ├── Dashboard.tsx   # Upload & analysis dashboard
-│   │   │   └── About.tsx       # Team & project info
+│   │   │   ├── Home.tsx            # Landing page
+│   │   │   ├── Dashboard.tsx       # Upload, demo samples & analysis
+│   │   │   └── About.tsx           # Team & project info
 │   │   ├── components/
-│   │   │   ├── layout/         # Navbar, Footer, Background
-│   │   │   ├── providers/      # ThemeProvider
-│   │   │   └── ui/             # ThemeToggle, etc.
-│   │   └── app/
-│   │       └── globals.css     # Global styles & Tailwind
-│   ├── tailwind.config.ts      # Custom theme configuration
-│   ├── vite.config.ts          # Vite configuration
+│   │   │   ├── layout/             # Navbar, Footer, Background
+│   │   │   ├── providers/          # ThemeProvider
+│   │   │   └── ui/                 # ThemeToggle, Loading
+│   │   └── lib/
+│   │       ├── utils.ts            # Utility functions
+│   │       └── demoSamples.ts      # Demo audio sample configuration
+│   ├── public/
+│   │   └── demo-samples/           # Pre-loaded audio clips (AI + Human)
+│   ├── tailwind.config.ts
+│   ├── vite.config.ts
 │   └── package.json
 │
-├── app.py                      # FastAPI server
+├── app.py                          # FastAPI server
 ├── audio/
-│   └── processing.py           # Audio preprocessing & feature extraction
+│   └── processing.py               # Audio preprocessing & feature extraction
 ├── model/
-│   ├── model.py                # ResNet classifier + Wav2Vec2 embedder
-│   ├── classifier.pth          # Trained weights
-│   └── classifier_best.pth     # Best validation checkpoint
+│   ├── model.py                    # ResNet classifier + Wav2Vec2 embedder
+│   ├── classifier.pth              # Trained weights
+│   └── classifier_best.pth         # Best validation checkpoint
 ├── utils/
-│   └── explain.py              # Human-readable explanation generator
+│   └── explain.py                  # Human-readable explanation generator
 ├── dataset/
-│   ├── human/                  # Real voice samples
-│   └── ai/                     # AI-generated samples
-├── Dockerfile                  # Backend container
-├── railway.json                # Railway deployment config
-└── requirements.txt            # Python dependencies
+│   ├── human/                      # Real voice training samples
+│   └── ai/                         # AI-generated training samples
+├── Dockerfile                      # Backend container (multi-stage)
+├── railway.json                    # Railway deployment config
+├── nixpacks.toml                   # Nixpacks deployment config
+├── render.yaml                     # Render deployment config
+└── requirements.txt                # Python dependencies
 ```
 
 ---
@@ -159,7 +167,7 @@ cp .env.example .env.local
 npm run dev
 ```
 
-**Frontend:** http://localhost:3000
+**Frontend:** http://localhost:5173
 
 ### Backend Setup
 
@@ -250,6 +258,19 @@ _Flexible input:_ `en`, `eng`, `english`, `English` (and similar for other langu
 
 ## 🧪 Testing
 
+### Quick Test with cURL
+
+```bash
+# Encode audio
+BASE64=$(base64 -w 0 audio.mp3)
+
+# Test API
+curl -X POST "https://voxproof-api.up.railway.app/api/voice-detection" \
+  -H "x-api-key: YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d "{\"language\":\"English\",\"audioFormat\":\"mp3\",\"audioBase64\":\"$BASE64\"}"
+```
+
 ### Quick Test with Python
 
 ```python
@@ -266,7 +287,7 @@ with open("test_audio.mp3", "rb") as f:
 
 # Send request
 response = requests.post(
-    "https://voxproof-api.onrender.com/api/voice-detection",
+    "https://voxproof-api.up.railway.app/api/voice-detection",
     headers={
         "x-api-key": os.getenv("API_KEY"),
         "Content-Type": "application/json"
@@ -283,25 +304,6 @@ result = response.json()
 print(f"Classification: {result['classification']}")
 print(f"Confidence: {result['confidenceScore']:.1%}")
 print(f"Explanation: {result['explanation']}")
-```
-
-### Quick Test with cURL
-
-```bash
-# Encode audio
-BASE64=$(base64 -w 0 audio.mp3)
-
-# Test API
-curl -X POST "https://voxproof-api.onrender.com/api/voice-detection" \
-  -H "x-api-key: YOUR_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d "{\"language\":\"English\",\"audioFormat\":\"mp3\",\"audioBase64\":\"$BASE64\"}"
-```
-
-### Run Test Script
-
-```bash
-python test_api.py
 ```
 
 ---
@@ -340,7 +342,6 @@ python train_fast.py
 
 - `model/classifier.pth` - Final model
 - `model/classifier_best.pth` - Best validation checkpoint
-- `model/scaler.pkl` - Feature normalization
 
 ---
 
@@ -353,6 +354,7 @@ python train_fast.py
 | `MODEL_PATH`    | `model/classifier.pth`        | Path to trained weights |
 | `WAV2VEC_MODEL` | `facebook/wav2vec2-base-960h` | Wav2Vec2 model          |
 | `SAMPLE_RATE`   | `16000`                       | Audio sample rate (Hz)  |
+| `PRODUCTION`    | `false`                       | Enable production mode  |
 
 ---
 
@@ -362,12 +364,12 @@ python train_fast.py
 | -------------------- | ------------------------------ |
 | **Frontend**         | React 18, Vite 5, Tailwind CSS |
 | **Animations**       | Framer Motion                  |
-| **API Framework**    | FastAPI + Uvicorn + Gunicorn   |
+| **API Framework**    | FastAPI + Uvicorn              |
 | **ML Framework**     | PyTorch 2.2 (CPU)              |
 | **Speech Model**     | Wav2Vec2 (HuggingFace)         |
 | **Audio Processing** | librosa + pydub + FFmpeg       |
 | **Frontend Hosting** | Vercel                         |
-| **Backend Hosting**  | Render                         |
+| **Backend Hosting**  | Railway / Render               |
 
 ---
 
@@ -376,41 +378,48 @@ python train_fast.py
 ### Frontend (Vercel)
 
 ```bash
-# Navigate to frontend
 cd frontend
-
-# Install Vercel CLI
 npm i -g vercel
-
-# Deploy
 vercel
-
-# Set environment variables in Vercel Dashboard:
-# VITE_API_BASE_URL=https://voxproof-api.onrender.com
-# VITE_API_KEY=your-api-key
 ```
 
-Or connect your GitHub repo to Vercel for automatic deployments.
+Set environment variables in Vercel Dashboard:
+
+- `VITE_API_BASE_URL` = your API URL
+- `VITE_API_KEY` = your API key
+
+Or connect your GitHub repo for automatic deployments.
+
+### Backend (Railway)
+
+1. Create a new project on [Railway](https://railway.app)
+2. Connect your GitHub repository
+3. Railway auto-detects the `Dockerfile` (or `nixpacks.toml`)
+4. Add environment variables:
+   - `API_KEY`: Your secret API key
+   - `PRODUCTION`: `true`
+5. Deploy — Railway will build and run the container
+
+The `railway.json` configures:
+
+- Dockerfile-based builds
+- Health check at `/health` with 600s timeout
+- Auto-restart on failure
 
 ### Backend (Render)
 
-1. Create a new **Web Service** on Render
+1. Create a new **Web Service** on [Render](https://render.com)
 2. Connect your GitHub repository
-3. Configure:
-   - **Build Command:** `pip install -r requirements.txt`
-   - **Start Command:** `gunicorn app:app -w 4 -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:$PORT --timeout 120`
+3. Select **Docker** environment (uses the `Dockerfile`)
 4. Add environment variables:
    - `API_KEY`: Your secret API key
-   - `PORT`: 8000
+   - `PRODUCTION`: `true`
 
-### Docker (Manual)
+### Docker (Local)
 
 ```bash
-# Build backend
 docker build -t voxproof-api .
-
-# Run
-docker run -p 8000:8000 -e API_KEY=your-key voxproof-api
+docker run -p 8000:8000 -e API_KEY=your-key -e PRODUCTION=true voxproof-api
 ```
 
 ---
@@ -420,7 +429,7 @@ docker run -p 8000:8000 -e API_KEY=your-key voxproof-api
 | Metric         | Value                           |
 | -------------- | ------------------------------- |
 | Inference time | 2-8 seconds (15s audio, CPU)    |
-| Cold start     | ~30 seconds (model loading)     |
+| Cold start     | ~30 seconds (models pre-loaded) |
 | Accuracy       | 95%+ (depends on training data) |
 | Supported TTS  | ElevenLabs, OpenAI, Coqui, etc. |
 
@@ -430,9 +439,10 @@ docker run -p 8000:8000 -e API_KEY=your-key voxproof-api
 
 - API key authentication required for all requests
 - Base64 validation to prevent injection
-- Request timeout to prevent resource exhaustion
+- Request timeout (120s) to prevent resource exhaustion
 - No audio storage (processed in memory only)
 - CORS configured for frontend domain
+- Pure ASGI middleware for minimal overhead
 
 ---
 

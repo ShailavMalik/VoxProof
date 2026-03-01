@@ -14,8 +14,13 @@ import {
   Shield,
   Zap,
   AudioWaveform,
+  Play,
+  Pause,
+  Headphones,
+  ArrowRight,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import { demoSamples, type DemoSample } from "../lib/demoSamples";
 
 // Analysis steps for the futuristic loading animation
 const analysisSteps: { icon: LucideIcon; text: string; color: string }[] = [
@@ -58,6 +63,10 @@ export default function DashboardPage() {
   const [currentStep, setCurrentStep] = useState(0);
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [showDemoModal, setShowDemoModal] = useState(false);
+  const [selectedDemo, setSelectedDemo] = useState<string | null>(null);
+  const [playingAudioId, setPlayingAudioId] = useState<string | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Progress through analysis steps during loading
@@ -143,8 +152,70 @@ export default function DashboardPage() {
     setFileDetails(null);
     setResult(null);
     setError(null);
+    setSelectedDemo(null);
+    stopAudio();
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
+    }
+  };
+
+  const stopAudio = () => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+      audioRef.current = null;
+    }
+    setPlayingAudioId(null);
+  };
+
+  const togglePlayAudio = (demo: DemoSample) => {
+    // If same audio is playing, stop it
+    if (playingAudioId === demo.id) {
+      stopAudio();
+      return;
+    }
+
+    // Stop any currently playing audio
+    stopAudio();
+
+    // Play new audio
+    const audio = new Audio(demo.fileUrl);
+    audio.onended = () => setPlayingAudioId(null);
+    audio.play().catch(() => setPlayingAudioId(null));
+    audioRef.current = audio;
+    setPlayingAudioId(demo.id);
+  };
+
+  const handleDemoSelect = async (demo: DemoSample) => {
+    setSelectedDemo(demo.id);
+    setError(null);
+    setResult(null);
+    setShowDemoModal(false);
+    stopAudio();
+
+    try {
+      // Fetch the demo audio file
+      const response = await fetch(demo.fileUrl);
+      if (!response.ok) {
+        throw new Error(
+          `Demo file not found. Please add ${demo.fileUrl} to your public folder.`,
+        );
+      }
+
+      const blob = await response.blob();
+      const file = new File([blob], demo.name + ".mp3", { type: "audio/mpeg" });
+
+      setFile(file);
+      setFileDetails({
+        name: demo.name,
+        size: blob.size,
+        type: "audio/mpeg",
+      });
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Failed to load demo sample",
+      );
+      setSelectedDemo(null);
     }
   };
 
@@ -263,12 +334,127 @@ export default function DashboardPage() {
           </div>
         </motion.div>
 
-        {/* Futuristic Loading Animation Overlay */}
+        {/* Demo Samples Modal */}
         <AnimatePresence>
-          {isAnalyzing && <FuturisticLoader currentStep={currentStep} />}
+          {showDemoModal && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-dark-900/80 backdrop-blur-md"
+              onClick={() => {
+                setShowDemoModal(false);
+                stopAudio();
+              }}>
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9, y: 30 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.9, y: 30 }}
+                transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                onClick={(e) => e.stopPropagation()}
+                className="relative w-full max-w-2xl max-h-[80vh] overflow-hidden rounded-2xl glass-card border border-white/10">
+                {/* Modal corner decorations */}
+                <div className="absolute top-2 left-2 w-6 h-6 border-l-2 border-t-2 border-neon-cyan/40 rounded-tl-lg z-10" />
+                <div className="absolute top-2 right-2 w-6 h-6 border-r-2 border-t-2 border-neon-purple/40 rounded-tr-lg z-10" />
+                <div className="absolute bottom-2 left-2 w-6 h-6 border-l-2 border-b-2 border-neon-purple/40 rounded-bl-lg z-10" />
+                <div className="absolute bottom-2 right-2 w-6 h-6 border-r-2 border-b-2 border-neon-cyan/40 rounded-br-lg z-10" />
+
+                {/* Top scanning line */}
+                <motion.div
+                  className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-neon-cyan to-transparent z-10"
+                  animate={{ opacity: [0.3, 0.8, 0.3] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                />
+
+                {/* Header */}
+                <div className="flex items-center justify-between p-5 border-b border-white/10">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-lg bg-gradient-to-br from-neon-cyan/20 to-neon-purple/20">
+                      <Headphones className="w-5 h-5 text-neon-cyan" />
+                    </div>
+                    <div>
+                      <h2 className="font-bold text-lg bg-gradient-to-r from-neon-cyan to-neon-purple bg-clip-text text-transparent">
+                        Sample Audio Library
+                      </h2>
+                      <p className="text-xs text-dark-400 dark:text-light-500">
+                        Play or select a sample to analyze
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => {
+                      setShowDemoModal(false);
+                      stopAudio();
+                    }}
+                    className="p-2 rounded-lg hover:bg-white/5 transition-colors">
+                    <X className="w-5 h-5 text-dark-400 dark:text-light-500" />
+                  </button>
+                </div>
+
+                {/* Samples List */}
+                <div className="overflow-y-auto max-h-[calc(80vh-80px)] p-5 space-y-6">
+                  {/* AI Generated Section */}
+                  <div>
+                    <div className="flex items-center gap-2 mb-3">
+                      <div className="w-2 h-2 rounded-full bg-verdict-ai-primary" />
+                      <span className="text-xs font-bold uppercase tracking-wider text-verdict-ai-primary">
+                        AI Generated
+                      </span>
+                      <div className="flex-1 h-px bg-verdict-ai-primary/20" />
+                    </div>
+                    <div className="space-y-2">
+                      {demoSamples
+                        .filter((d) => d.type === "ai")
+                        .map((demo, index) => (
+                          <DemoSampleCard
+                            key={demo.id}
+                            demo={demo}
+                            index={index}
+                            isPlaying={playingAudioId === demo.id}
+                            onPlay={() => togglePlayAudio(demo)}
+                            onSelect={() => handleDemoSelect(demo)}
+                          />
+                        ))}
+                    </div>
+                  </div>
+
+                  {/* Human Section */}
+                  <div>
+                    <div className="flex items-center gap-2 mb-3">
+                      <div className="w-2 h-2 rounded-full bg-verdict-human-primary" />
+                      <span className="text-xs font-bold uppercase tracking-wider text-verdict-human-primary">
+                        Human Voice
+                      </span>
+                      <div className="flex-1 h-px bg-verdict-human-primary/20" />
+                    </div>
+                    <div className="space-y-2">
+                      {demoSamples
+                        .filter((d) => d.type === "human")
+                        .map((demo, index) => (
+                          <DemoSampleCard
+                            key={demo.id}
+                            demo={demo}
+                            index={index}
+                            isPlaying={playingAudioId === demo.id}
+                            onPlay={() => togglePlayAudio(demo)}
+                            onSelect={() => handleDemoSelect(demo)}
+                          />
+                        ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Bottom line */}
+                <motion.div
+                  className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-neon-purple to-transparent"
+                  animate={{ opacity: [0.3, 0.8, 0.3] }}
+                  transition={{ duration: 2, repeat: Infinity, delay: 1 }}
+                />
+              </motion.div>
+            </motion.div>
+          )}
         </AnimatePresence>
 
-        {/* Upload Area */}
         <motion.div variants={fadeInUp} className="mb-8 relative">
           {/* Subtle outer glow when dragging */}
           {isDragging && (
@@ -360,14 +546,21 @@ export default function DashboardPage() {
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.9 }}
                   className="flex items-center justify-between relative z-10">
-                  <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-4 flex-1">
                     <div className="p-3 rounded-xl bg-neon-cyan/10">
                       <FileAudio className="w-8 h-8 text-neon-cyan" />
                     </div>
-                    <div className="text-left">
-                      <p className="font-medium truncate max-w-xs">
-                        {fileDetails?.name}
-                      </p>
+                    <div className="text-left flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <p className="font-medium truncate">
+                          {fileDetails?.name}
+                        </p>
+                        {selectedDemo && (
+                          <span className="flex-shrink-0 text-[10px] px-2 py-0.5 rounded-full bg-gradient-to-r from-neon-cyan/20 to-neon-purple/20 text-neon-cyan font-semibold uppercase tracking-wider">
+                            Demo
+                          </span>
+                        )}
+                      </div>
                       <p className="text-sm text-dark-500 dark:text-light-400">
                         {fileDetails && formatFileSize(fileDetails.size)}
                       </p>
@@ -379,13 +572,69 @@ export default function DashboardPage() {
                       clearFile();
                     }}
                     disabled={isAnalyzing}
-                    className="p-2 rounded-lg hover:bg-red-500/10 text-red-500 transition-colors disabled:opacity-50">
+                    className="p-2 rounded-lg hover:bg-red-500/10 text-red-500 transition-colors disabled:opacity-50 flex-shrink-0">
                     <X className="w-5 h-5" />
                   </button>
                 </motion.div>
               }
             </AnimatePresence>
           </div>
+
+          {/* "Try sample clips" CTA - shown only when no file is selected */}
+          {!file && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="mt-6 relative">
+              {/* Glow background */}
+              <motion.div
+                className="absolute -inset-0.5 bg-gradient-to-r from-neon-cyan/30 via-neon-purple/30 to-neon-cyan/30 rounded-xl blur-sm"
+                animate={{ opacity: [0.3, 0.5, 0.3] }}
+                transition={{ duration: 2, repeat: Infinity }}
+              />
+
+              <motion.button
+                whileHover={{ scale: 1.02, y: -2 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => setShowDemoModal(true)}
+                className="relative w-full group flex items-center justify-center gap-3 px-6 py-4 rounded-xl border-2 border-neon-cyan/50 bg-gradient-to-br from-neon-cyan/10 via-neon-purple/5 to-transparent hover:border-neon-cyan hover:bg-gradient-to-br hover:from-neon-cyan/15 hover:via-neon-purple/10 hover:to-transparent transition-all duration-300 overflow-hidden">
+                {/* Animated shine effect */}
+                <motion.div
+                  className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -skew-x-12"
+                  initial={{ x: "-100%" }}
+                  whileHover={{ x: "200%" }}
+                  transition={{ duration: 0.6 }}
+                />
+
+                {/* Content */}
+                <div className="relative flex items-center justify-center gap-3 z-10">
+                  <motion.div
+                    animate={{ scale: [1, 1.1, 1] }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                    className="p-2 rounded-lg bg-neon-cyan/20">
+                    <Headphones className="w-6 h-6 text-neon-cyan group-hover:scale-110 transition-transform" />
+                  </motion.div>
+
+                  <div className="text-left">
+                    <span className="block text-sm text-dark-400 dark:text-light-500 group-hover:text-light-300 transition-colors">
+                      Don't have audio?
+                    </span>
+                    <span className="block text-lg font-bold bg-gradient-to-r from-neon-cyan via-neon-purple to-neon-pink bg-clip-text text-transparent group-hover:from-neon-cyan group-hover:via-neon-pink group-hover:to-neon-cyan transition-all">
+                      Try sample clips
+                    </span>
+                  </div>
+
+                  <motion.div
+                    animate={{ x: [0, 4, 0] }}
+                    transition={{ duration: 1.5, repeat: Infinity }}
+                    className="ml-2">
+                    <ArrowRight className="w-5 h-5 text-neon-cyan group-hover:text-neon-pink transition-colors" />
+                  </motion.div>
+                </div>
+              </motion.button>
+            </motion.div>
+          )}
         </motion.div>
 
         {/* Error Message */}
@@ -520,6 +769,91 @@ export default function DashboardPage() {
         </motion.div>
       </motion.div>
     </div>
+  );
+}
+
+// Demo Sample Card Component for the modal
+function DemoSampleCard({
+  demo,
+  index,
+  isPlaying,
+  onPlay,
+  onSelect,
+}: {
+  demo: DemoSample;
+  index: number;
+  isPlaying: boolean;
+  onPlay: () => void;
+  onSelect: () => void;
+}) {
+  const isAI = demo.type === "ai";
+  const borderColor =
+    isAI ? "border-verdict-ai-primary" : "border-verdict-human-primary";
+  const hoverBg =
+    isAI ? "hover:bg-verdict-ai-primary/5" : "hover:bg-verdict-human-primary/5";
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, x: -10 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ delay: index * 0.05 }}
+      className={`group relative flex items-center gap-4 p-3 rounded-xl border border-white/5 ${hoverBg} transition-all duration-300`}>
+      {/* Play button */}
+      <button
+        onClick={onPlay}
+        className={`
+          relative flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300
+          ${
+            isPlaying ?
+              `${isAI ? "bg-verdict-ai-primary/20 border-verdict-ai-primary" : "bg-verdict-human-primary/20 border-verdict-human-primary"} border-2`
+            : "bg-white/5 border border-white/10 hover:border-white/30"
+          }
+        `}>
+        {isPlaying ?
+          <>
+            <motion.div
+              className="absolute inset-0 rounded-full"
+              style={{ backgroundColor: isAI ? "#ff4444" : "#00cc88" }}
+              animate={{ opacity: [0.1, 0.3, 0.1] }}
+              transition={{ duration: 1, repeat: Infinity }}
+            />
+            <Pause
+              className={`w-4 h-4 relative z-10 ${isAI ? "text-verdict-ai-primary" : "text-verdict-human-primary"}`}
+            />
+          </>
+        : <Play className="w-4 h-4 text-dark-400 dark:text-light-500 ml-0.5" />}
+      </button>
+
+      {/* Info */}
+      <div className="flex-1 min-w-0">
+        <h4 className="font-medium text-sm truncate">{demo.name}</h4>
+        <p className="text-xs text-dark-400 dark:text-light-500 truncate">
+          {demo.description}
+        </p>
+      </div>
+
+      {/* Language badge */}
+      <span className="flex-shrink-0 text-[10px] px-2 py-0.5 rounded-full bg-white/5 text-dark-400 dark:text-light-500 font-medium">
+        {demo.language}
+      </span>
+
+      {/* Analyze button */}
+      <motion.button
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        onClick={onSelect}
+        className={`
+          flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-300
+          ${
+            isAI ?
+              "bg-verdict-ai-primary/10 text-verdict-ai-primary hover:bg-verdict-ai-primary/20 border border-verdict-ai-primary/20"
+            : "bg-verdict-human-primary/10 text-verdict-human-primary hover:bg-verdict-human-primary/20 border border-verdict-human-primary/20"
+          }
+        `}>
+        <Zap className="w-3 h-3" />
+        Analyze
+      </motion.button>
+    </motion.div>
   );
 }
 
