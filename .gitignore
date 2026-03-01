@@ -143,7 +143,6 @@ ehthumbs.db
 
 dataset/
 *.wav
-*.mp3
 *.tar.gz
 
 # Documentation (generated, not needed in repo)
