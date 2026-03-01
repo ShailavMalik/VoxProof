@@ -3,7 +3,7 @@
 > **Detect AI-generated voices in real-time** - Built for the AI Impact Buildathon 2026
 
 [![Live Frontend](https://img.shields.io/badge/Frontend-Vercel-black)](https://voxproof.vercel.app)
-[![Live API](https://img.shields.io/badge/API-Railway-blueviolet)](https://voxproof-api.up.railway.app)
+[![Live API](https://img.shields.io/badge/API-Railway-blueviolet)](https://voxproof-backend.up.railway.app)
 [![Python 3.11](https://img.shields.io/badge/Python-3.11-blue)](https://python.org)
 [![Vite](https://img.shields.io/badge/Vite-5-646CFF)](https://vitejs.dev)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.110-green)](https://fastapi.tiangolo.com)
@@ -16,8 +16,8 @@
 | Resource              | URL                                                                                      |
 | --------------------- | ---------------------------------------------------------------------------------------- |
 | **Frontend App**      | [https://voxproof.vercel.app](https://voxproof.vercel.app)                               |
-| **API Documentation** | [https://voxproof-api.up.railway.app/docs](https://voxproof-api.up.railway.app/docs)     |
-| **Health Check**      | [https://voxproof-api.up.railway.app/health](https://voxproof-api.up.railway.app/health) |
+| **API Documentation** | [https://voxproof-backend.up.railway.app/docs](https://voxproof-backend.up.railway.app/docs)     |
+| **Health Check**      | [https://voxproof-backend.up.railway.app/health](https://voxproof-backend.up.railway.app/health) |
 
 > **Try it out:** Don't have audio? The dashboard includes **sample audio clips** (both AI-generated and real human voices) you can play and analyze instantly.
 
