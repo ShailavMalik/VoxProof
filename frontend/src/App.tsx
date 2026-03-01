@@ -6,6 +6,7 @@ import { Background } from "@/components/layout/Background";
 import HomePage from "@/pages/Home";
 import DashboardPage from "@/pages/Dashboard";
 import AboutPage from "@/pages/About";
+import TechnicalPage from "@/pages/Technical";
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
             <Route path="/" element={<HomePage />} />
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/about" element={<AboutPage />} />
+            <Route path="/technical" element={<TechnicalPage />} />
           </Routes>
         </main>
         <Footer />

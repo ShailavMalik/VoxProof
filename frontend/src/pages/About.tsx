@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
 import {
   Shield,
   Linkedin,
@@ -14,6 +15,8 @@ import {
   AlertTriangle,
   CheckCircle,
   Sparkles,
+  BookOpen,
+  ChevronRight,
 } from "lucide-react";
 
 const fadeInUp = {
@@ -150,27 +153,14 @@ export default function AboutPage() {
                   href={member.linkedin}
                   target="_blank"
                   rel="noopener noreferrer"
-                  whileHover={{ scale: 1.08, y: -2 }}
+                  whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg relative group overflow-hidden">
-                  {/* Animated gradient border background */}
-                  <div className="absolute inset-0 bg-gradient-to-r from-neon-cyan via-neon-purple to-neon-pink rounded-lg opacity-75 group-hover:opacity-100 transition-opacity duration-300 animate-pulse" />
-                  {/* Glow effect */}
-                  <div className="absolute inset-0 bg-gradient-to-r from-neon-cyan to-neon-purple rounded-lg blur-xl opacity-0 group-hover:opacity-50 transition-opacity duration-300" />
-                  {/* Button content */}
-                  <div className="relative flex items-center gap-2 px-3 py-1.5 bg-dark-900/90 dark:bg-dark-800/90 group-hover:bg-dark-850/95 rounded-md transition-colors text-neon-cyan group-hover:text-neon-purple text-sm font-medium">
-                    <motion.div
-                      animate={{ rotate: [0, 5, -5, 0] }}
-                      transition={{ duration: 2, repeat: Infinity }}>
-                      <Linkedin className="w-4 h-4" />
-                    </motion.div>
+                  className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-lg bg-gradient-to-r from-neon-cyan/20 to-neon-cyan/10 border-2 border-neon-cyan hover:from-neon-cyan/30 hover:to-neon-cyan/20 hover:border-neon-purple transition-all duration-300 group">
+                  <Linkedin className="w-5 h-5 text-neon-cyan group-hover:text-neon-purple transition-colors" />
+                  <span className="text-sm font-semibold text-neon-cyan group-hover:text-neon-purple transition-colors">
                     LinkedIn
-                    <motion.div
-                      animate={{ x: [0, 2, 0] }}
-                      transition={{ duration: 1.5, repeat: Infinity }}>
-                      <ExternalLink className="w-3 h-3" />
-                    </motion.div>
-                  </div>
+                  </span>
+                  <ExternalLink className="w-4 h-4 text-neon-cyan group-hover:text-neon-purple transition-colors opacity-70 group-hover:opacity-100" />
                 </motion.a>
               </motion.div>
             ))}
@@ -744,6 +734,77 @@ export default function AboutPage() {
                   {tech}
                 </span>
               ))}
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Technical Documentation CTA */}
+        <motion.div variants={fadeInUp} className="mt-20">
+          <div className="relative overflow-hidden">
+            {/* Background gradient animation */}
+            <motion.div
+              className="absolute inset-0 bg-gradient-to-r from-neon-cyan/20 via-neon-purple/20 to-neon-pink/20 rounded-2xl blur-xl"
+              animate={{ opacity: [0.3, 0.6, 0.3] }}
+              transition={{ duration: 4, repeat: Infinity }}
+            />
+
+            <div className="relative glass-card p-8 md:p-12 border-2 border-neon-cyan/50 hover:border-neon-purple/50 transition-colors">
+              <div className="grid md:grid-cols-2 gap-8 items-center">
+                <motion.div
+                  initial={{ opacity: 0, x: -30 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true }}>
+                  <div className="flex items-center gap-3 mb-4">
+                    <BookOpen className="w-8 h-8 text-neon-cyan" />
+                    <h2 className="text-2xl md:text-3xl font-bold">
+                      Want the <span className="neon-text">Technical</span>{" "}
+                      Details?
+                    </h2>
+                  </div>
+                  <p className="text-dark-500 dark:text-light-400 mb-6">
+                    Explore comprehensive documentation covering system
+                    architecture, feature extraction, model internals, API
+                    endpoints, and performance metrics. Perfect for developers,
+                    researchers, and anyone interested in AI voice detection
+                    technology.
+                  </p>
+                  <Link to="/technical">
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      className="inline-flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-neon-cyan/20 to-neon-purple/20 border-2 border-neon-cyan rounded-lg hover:from-neon-cyan/30 hover:to-neon-purple/30 hover:border-neon-purple transition-all duration-300 font-semibold">
+                      Read Technical Docs
+                      <ChevronRight className="w-5 h-5" />
+                    </motion.button>
+                  </Link>
+                </motion.div>
+
+                <motion.div
+                  initial={{ opacity: 0, x: 30 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true }}
+                  className="grid grid-cols-2 gap-4">
+                  {[
+                    { title: "Architecture", icon: "🏗️" },
+                    { title: "Model Details", icon: "🧠" },
+                    { title: "Feature Extract", icon: "📊" },
+                    { title: "API Reference", icon: "🔌" },
+                  ].map((item, i) => (
+                    <motion.div
+                      key={item.title}
+                      initial={{ opacity: 0, y: 10 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      transition={{ delay: i * 0.1 }}
+                      viewport={{ once: true }}
+                      className="p-4 rounded-lg bg-dark-800/50 border border-neon-cyan/20 hover:border-neon-purple/50 transition-colors text-center">
+                      <div className="text-2xl mb-2">{item.icon}</div>
+                      <p className="text-sm font-medium text-dark-300 dark:text-light-300">
+                        {item.title}
+                      </p>
+                    </motion.div>
+                  ))}
+                </motion.div>
+              </div>
             </div>
           </div>
         </motion.div>

@@ -8,33 +8,14 @@ import {
   AlertTriangle,
   RefreshCw,
   Info,
-  Waves,
   Brain,
-  Cpu,
-  Shield,
   Zap,
-  AudioWaveform,
   Play,
   Pause,
   Headphones,
   ArrowRight,
 } from "lucide-react";
-import type { LucideIcon } from "lucide-react";
 import { demoSamples, type DemoSample } from "../lib/demoSamples";
-
-// Analysis steps for the futuristic loading animation
-const analysisSteps: { icon: LucideIcon; text: string; color: string }[] = [
-  { icon: AudioWaveform, text: "Decoding audio stream...", color: "#00f5ff" },
-  { icon: Waves, text: "Extracting waveform data...", color: "#00f5ff" },
-  { icon: Cpu, text: "Processing 798 acoustic features...", color: "#bf00ff" },
-  { icon: Brain, text: "Running neural network analysis...", color: "#bf00ff" },
-  { icon: Zap, text: "Analyzing Wav2Vec2 embeddings...", color: "#ff00aa" },
-  {
-    icon: Shield,
-    text: "Generating voice authenticity verdict...",
-    color: "#00f5ff",
-  },
-];
 
 interface AnalysisResult {
   status: string;
@@ -60,7 +41,6 @@ export default function DashboardPage() {
   const [fileDetails, setFileDetails] = useState<FileDetails | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [currentStep, setCurrentStep] = useState(0);
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [showDemoModal, setShowDemoModal] = useState(false);
@@ -69,18 +49,9 @@ export default function DashboardPage() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Progress through analysis steps during loading
+  // Analysis state effect
   useEffect(() => {
-    if (!isAnalyzing) {
-      setCurrentStep(0);
-      return;
-    }
-
-    const interval = setInterval(() => {
-      setCurrentStep((prev) => (prev + 1) % analysisSteps.length);
-    }, 1500);
-
-    return () => clearInterval(interval);
+    // Used for managing analysis state
   }, [isAnalyzing]);
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
@@ -404,8 +375,8 @@ export default function DashboardPage() {
                     </div>
                     <div className="space-y-2">
                       {demoSamples
-                        .filter((d) => d.type === "ai")
-                        .map((demo, index) => (
+                        .filter((d: DemoSample) => d.type === "ai")
+                        .map((demo: DemoSample, index: number) => (
                           <DemoSampleCard
                             key={demo.id}
                             demo={demo}
@@ -429,8 +400,8 @@ export default function DashboardPage() {
                     </div>
                     <div className="space-y-2">
                       {demoSamples
-                        .filter((d) => d.type === "human")
-                        .map((demo, index) => (
+                        .filter((d: DemoSample) => d.type === "human")
+                        .map((demo: DemoSample, index: number) => (
                           <DemoSampleCard
                             key={demo.id}
                             demo={demo}
@@ -787,8 +758,6 @@ function DemoSampleCard({
   onSelect: () => void;
 }) {
   const isAI = demo.type === "ai";
-  const borderColor =
-    isAI ? "border-verdict-ai-primary" : "border-verdict-human-primary";
   const hoverBg =
     isAI ? "hover:bg-verdict-ai-primary/5" : "hover:bg-verdict-human-primary/5";
 
@@ -1034,205 +1003,6 @@ function ResultCard({
         </motion.button>
       </div>
     </div>
-  );
-}
-
-// Futuristic Loading Animation Component
-function FuturisticLoader({ currentStep }: { currentStep: number }) {
-  const step = analysisSteps[currentStep];
-  const Icon = step.icon;
-
-  return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-dark-900/90 dark:bg-dark-900/95 backdrop-blur-xl">
-      <div className="relative flex flex-col items-center">
-        {/* Outer rotating rings */}
-        <div className="relative w-64 h-64">
-          {/* Ring 1 - Outer */}
-          <motion.div
-            className="absolute inset-0 rounded-full border-2 border-neon-cyan/30"
-            animate={{ rotate: 360 }}
-            transition={{ duration: 8, repeat: Infinity, ease: "linear" }}>
-            {/* Glowing dot on ring */}
-            <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-neon-cyan rounded-full shadow-[0_0_10px_#00f5ff,0_0_20px_#00f5ff]" />
-          </motion.div>
-
-          {/* Ring 2 */}
-          <motion.div
-            className="absolute inset-6 rounded-full border-2 border-neon-purple/40"
-            animate={{ rotate: -360 }}
-            transition={{ duration: 6, repeat: Infinity, ease: "linear" }}>
-            <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-neon-purple rounded-full shadow-[0_0_10px_#bf00ff,0_0_20px_#bf00ff]" />
-          </motion.div>
-
-          {/* Ring 3 */}
-          <motion.div
-            className="absolute inset-12 rounded-full border-2 border-neon-pink/40"
-            animate={{ rotate: 360 }}
-            transition={{ duration: 4, repeat: Infinity, ease: "linear" }}>
-            <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 w-2 h-2 bg-neon-pink rounded-full shadow-[0_0_10px_#ff00aa,0_0_20px_#ff00aa]" />
-          </motion.div>
-
-          {/* Pulsing core glow */}
-          <motion.div
-            className="absolute inset-16 rounded-full bg-gradient-to-br from-neon-cyan/20 via-neon-purple/10 to-neon-pink/20"
-            animate={{
-              scale: [1, 1.15, 1],
-              opacity: [0.4, 0.7, 0.4],
-            }}
-            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-          />
-
-          {/* Center icon container */}
-          <div className="absolute inset-0 flex items-center justify-center">
-            <motion.div
-              className="relative"
-              animate={{ scale: [1, 1.05, 1] }}
-              transition={{
-                duration: 1.5,
-                repeat: Infinity,
-                ease: "easeInOut",
-              }}>
-              {/* Glowing background behind icon */}
-              <motion.div
-                className="absolute inset-0 blur-2xl rounded-full -z-10"
-                style={{
-                  backgroundColor: step.color,
-                  width: 100,
-                  height: 100,
-                  marginLeft: -25,
-                  marginTop: -25,
-                }}
-                animate={{ opacity: [0.3, 0.6, 0.3] }}
-                transition={{ duration: 1.5, repeat: Infinity }}
-              />
-
-              {/* Icon with animated entrance */}
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={currentStep}
-                  initial={{ opacity: 0, scale: 0.5, rotate: -180 }}
-                  animate={{ opacity: 1, scale: 1, rotate: 0 }}
-                  exit={{ opacity: 0, scale: 0.5, rotate: 180 }}
-                  transition={{ duration: 0.5, ease: "easeOut" }}
-                  className="relative p-5 rounded-2xl bg-dark-800/90 border border-white/10"
-                  style={{
-                    boxShadow: `0 0 40px ${step.color}40, 0 0 80px ${step.color}20`,
-                  }}>
-                  <Icon className="w-10 h-10" style={{ color: step.color }} />
-                </motion.div>
-              </AnimatePresence>
-            </motion.div>
-          </div>
-
-          {/* Orbiting particles */}
-          {[...Array(8)].map((_, i) => (
-            <motion.div
-              key={i}
-              className="absolute w-2 h-2 rounded-full"
-              style={{
-                backgroundColor:
-                  i % 3 === 0 ? "#00f5ff"
-                  : i % 3 === 1 ? "#bf00ff"
-                  : "#ff00aa",
-                left: "50%",
-                top: "50%",
-                marginLeft: "-4px",
-                marginTop: "-4px",
-                boxShadow: `0 0 6px ${
-                  i % 3 === 0 ? "#00f5ff"
-                  : i % 3 === 1 ? "#bf00ff"
-                  : "#ff00aa"
-                }`,
-              }}
-              animate={{
-                x: [
-                  Math.cos((i * Math.PI * 2) / 8) * 90,
-                  Math.cos((i * Math.PI * 2) / 8 + Math.PI) * 90,
-                  Math.cos((i * Math.PI * 2) / 8) * 90,
-                ],
-                y: [
-                  Math.sin((i * Math.PI * 2) / 8) * 90,
-                  Math.sin((i * Math.PI * 2) / 8 + Math.PI) * 90,
-                  Math.sin((i * Math.PI * 2) / 8) * 90,
-                ],
-                scale: [1, 1.5, 1],
-                opacity: [0.6, 1, 0.6],
-              }}
-              transition={{
-                duration: 4,
-                repeat: Infinity,
-                delay: i * 0.15,
-                ease: "easeInOut",
-              }}
-            />
-          ))}
-        </div>
-
-        {/* Text display */}
-        <div className="mt-10 text-center">
-          <AnimatePresence mode="wait">
-            <motion.p
-              key={currentStep}
-              initial={{ opacity: 0, y: 20, filter: "blur(10px)" }}
-              animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-              exit={{ opacity: 0, y: -20, filter: "blur(10px)" }}
-              transition={{ duration: 0.4 }}
-              className="text-xl font-medium text-white mb-3"
-              style={{ textShadow: `0 0 30px ${step.color}` }}>
-              {step.text}
-            </motion.p>
-          </AnimatePresence>
-
-          {/* Progress dots */}
-          <div className="flex items-center justify-center gap-2 mt-4">
-            {analysisSteps.map((_, i) => (
-              <motion.div
-                key={i}
-                className="w-2 h-2 rounded-full transition-colors duration-300"
-                style={{
-                  backgroundColor: i === currentStep ? step.color : "#333",
-                  boxShadow:
-                    i === currentStep ? `0 0 8px ${step.color}` : "none",
-                }}
-                animate={
-                  i === currentStep ? { scale: [1, 1.4, 1] } : { scale: 1 }
-                }
-                transition={{
-                  duration: 0.6,
-                  repeat: i === currentStep ? Infinity : 0,
-                }}
-              />
-            ))}
-          </div>
-
-          {/* Scanning line effect */}
-          <motion.div className="mt-6 h-1 w-64 rounded-full overflow-hidden bg-dark-700">
-            <motion.div
-              className="h-full w-20 rounded-full"
-              style={{
-                background: `linear-gradient(90deg, transparent, ${step.color}, transparent)`,
-              }}
-              animate={{ x: ["-80px", "320px"] }}
-              transition={{
-                duration: 1.5,
-                repeat: Infinity,
-                ease: "easeInOut",
-              }}
-            />
-          </motion.div>
-        </div>
-
-        {/* Corner decorations */}
-        <div className="absolute -top-8 -left-8 w-12 h-12 border-l-2 border-t-2 border-neon-cyan/50" />
-        <div className="absolute -top-8 -right-8 w-12 h-12 border-r-2 border-t-2 border-neon-purple/50" />
-        <div className="absolute -bottom-8 -left-8 w-12 h-12 border-l-2 border-b-2 border-neon-purple/50" />
-        <div className="absolute -bottom-8 -right-8 w-12 h-12 border-r-2 border-b-2 border-neon-cyan/50" />
-      </div>
-    </motion.div>
   );
 }
 
