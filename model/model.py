@@ -16,6 +16,7 @@ Author: VoxProof Team
 License: MIT
 """
 
+import gc
 import logging
 import os
 import warnings
@@ -78,13 +79,13 @@ class Wav2VecEmbedder:
     
     def __init__(self, model_name: str = "facebook/wav2vec2-base-960h"):
         self.model_name = model_name
-        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.device = torch.device("cpu")  # Always CPU for memory efficiency
         self.processor = None  # Lazy loaded
         self.model = None  # Lazy loaded
         self._loaded = False
         
     def load(self) -> None:
-        """Load the pretrained model (lazy loading)."""
+        """Load the pretrained model with INT8 quantization for memory efficiency."""
         if self._loaded:
             return
         
@@ -100,16 +101,31 @@ class Wav2VecEmbedder:
         # Freeze all parameters - we only extract embeddings
         for param in self.model.parameters():
             param.requires_grad = False
+        
+        # INT8 dynamic quantization — reduces model from ~360MB to ~90MB
+        try:
+            self.model = torch.quantization.quantize_dynamic(
+                self.model,
+                {torch.nn.Linear},
+                dtype=torch.qint8
+            )
+            logger.info("  ✓ Wav2Vec2 quantized to INT8 (memory optimized)")
+        except Exception as e:
+            logger.warning(f"  ⚠ INT8 quantization failed, using FP32: {e}")
+        
+        # Force garbage collection after loading
+        gc.collect()
             
         self._loaded = True
         logger.info(f"  ✓ Wav2Vec2 loaded on {self.device}")
         
-    @torch.no_grad()
+    @torch.inference_mode()
     def extract_embedding(self, waveform: np.ndarray, sample_rate: int = 16000) -> np.ndarray:
         """
-        Extract embedding from audio waveform with optimized chunked processing.
+        Extract embedding from audio waveform with memory-optimized chunked processing.
         
         For long audio, processes in chunks and averages embeddings for speed.
+        Uses inference_mode for lower memory overhead than no_grad.
         
         Args:
             waveform: Audio samples as numpy array
@@ -121,8 +137,8 @@ class Wav2VecEmbedder:
         if not self._loaded:
             self.load()
         
-        # Chunk size: 10 seconds of audio at 16kHz for faster processing
-        chunk_size = 10 * sample_rate  # 160,000 samples
+        # Chunk size: 5 seconds of audio at 16kHz (reduced from 10s for memory)
+        chunk_size = 5 * sample_rate  # 80,000 samples
         
         # If audio is short enough, process directly
         if len(waveform) <= chunk_size:
@@ -150,9 +166,9 @@ class Wav2VecEmbedder:
         else:
             return self._extract_single_embedding(waveform[:chunk_size], sample_rate)
     
-    @torch.no_grad()
+    @torch.inference_mode()
     def _extract_single_embedding(self, waveform: np.ndarray, sample_rate: int) -> np.ndarray:
-        """Extract embedding from a single chunk of audio."""
+        """Extract embedding from a single chunk of audio with memory cleanup."""
         # Process audio
         inputs = self.processor(
             waveform, 
@@ -161,12 +177,17 @@ class Wav2VecEmbedder:
             padding=True
         )
         input_values = inputs.input_values.to(self.device)
+        del inputs  # Free processor output immediately
         
         # Extract embeddings (mean pooling over time)
         outputs = self.model(input_values)
         embedding = outputs.last_hidden_state.mean(dim=1)
         
-        return embedding.cpu().numpy().squeeze()
+        # Extract result and free GPU/CPU tensors
+        result = embedding.cpu().numpy().squeeze()
+        del input_values, outputs, embedding
+        
+        return result
 
 
 # ============================================================================
@@ -329,7 +350,7 @@ class VoiceDetectionModel:
         classifier_path: Optional[str] = None,
         wav2vec_model_name: str = "facebook/wav2vec2-base-960h"
     ):
-        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.device = torch.device("cpu")  # Always CPU for memory efficiency
         self.classifier_path = classifier_path
         
         # Initialize components
@@ -394,7 +415,10 @@ class VoiceDetectionModel:
             logger.warning("  ⚠ Run train.py to train the classifier for accurate predictions")
         
         self._loaded = True
-        logger.info("✓ VoiceDetectionModel ready")
+        
+        # Force garbage collection after loading all models
+        gc.collect()
+        logger.info("✓ VoiceDetectionModel ready (memory optimized)")
         
     def _prepare_acoustic_features(self, acoustic_features: AudioFeatures) -> np.ndarray:
         """
@@ -405,7 +429,7 @@ class VoiceDetectionModel:
         # Use the new to_vector method which returns all 30 features
         return acoustic_features.to_vector().astype(np.float32)
     
-    @torch.no_grad()
+    @torch.inference_mode()
     def predict(
         self, 
         waveform: np.ndarray, 
@@ -413,7 +437,7 @@ class VoiceDetectionModel:
         acoustic_features: AudioFeatures
     ) -> PredictionResult:
         """
-        Run inference on audio.
+        Run inference on audio with aggressive memory management.
         
         Args:
             waveform: Audio samples as numpy array
@@ -440,6 +464,9 @@ class VoiceDetectionModel:
                 wav2vec_embedding    # 768 dims
             ])
             
+            # Free embedding arrays
+            del acoustic_vector, wav2vec_embedding
+            
             # Step 4: Apply feature normalization if scaler available
             if self.scaler is not None:
                 combined_features = self.scaler.transform(combined_features.reshape(1, -1)).flatten()
@@ -450,17 +477,20 @@ class VoiceDetectionModel:
                 dtype=torch.float32
             ).unsqueeze(0).to(self.device)
             
+            del combined_features  # Free numpy array
+            
             # Get prediction from VoiceClassifier (the ONLY classifier)
             logits = self.classifier(features_tensor)
             probability = torch.sigmoid(logits).item()
+            
+            # Free tensors
+            del features_tensor, logits
             
             # Step 6: Apply threshold and calculate confidence
             is_ai = probability > 0.5
             classification = "AI_GENERATED" if is_ai else "HUMAN"
             
             # Confidence is the raw probability for the predicted class
-            # If predicting AI (prob > 0.5), confidence = probability
-            # If predicting HUMAN (prob <= 0.5), confidence = 1 - probability
             if is_ai:
                 confidence = probability
             else:
@@ -469,6 +499,9 @@ class VoiceDetectionModel:
             # Clamp to reasonable range
             confidence = max(0.50, min(0.99, confidence))
             
+            # Force garbage collection after inference
+            gc.collect()
+            
             return PredictionResult(
                 classification=classification,
                 confidence_score=round(confidence, 4),
@@ -476,6 +509,7 @@ class VoiceDetectionModel:
             )
             
         except Exception as e:
+            gc.collect()  # Clean up on error too
             logger.error(f"Prediction failed: {e}")
             raise RuntimeError(f"Model inference failed: {e}")
 

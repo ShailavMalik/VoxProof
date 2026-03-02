@@ -44,7 +44,16 @@ ENV PYTHONUNBUFFERED=1
 ENV TRANSFORMERS_CACHE=/root/.cache/huggingface
 ENV PRODUCTION=true
 
+# Memory optimization for 1GB RAM environments
+ENV OMP_NUM_THREADS=1
+ENV MKL_NUM_THREADS=1
+ENV NUMEXPR_NUM_THREADS=1
+ENV OPENBLAS_NUM_THREADS=1
+ENV MALLOC_TRIM_THRESHOLD_=65536
+ENV PYTHONMALLOC=malloc
+ENV TOKENIZERS_PARALLELISM=false
+
 EXPOSE 8000
 
-# Start server - use shell to expand PORT variable
-CMD sh -c "python -m uvicorn app:app --host 0.0.0.0 --port ${PORT:-8000} --timeout-keep-alive 120"
+# Start server - single worker, no reload, memory-optimized
+CMD sh -c "python -m uvicorn app:app --host 0.0.0.0 --port ${PORT:-8000} --timeout-keep-alive 120 --workers 1 --limit-concurrency 2"

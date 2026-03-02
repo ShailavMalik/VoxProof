@@ -21,6 +21,7 @@ License: MIT
 """
 
 import base64
+import gc
 import io
 import logging
 from dataclasses import dataclass
@@ -119,8 +120,8 @@ class AudioFeatures:
 
 
 # Maximum audio duration in seconds (longer audio is truncated to prevent timeout)
-# Railway free tier has 30s timeout, so we limit to 15s to ensure processing completes
-MAX_AUDIO_DURATION = 15  # 15 seconds max for reliable processing on CPU
+# Railway free tier has 1GB RAM - limit to 10s to keep memory in budget
+MAX_AUDIO_DURATION = 10  # 10 seconds max for reliable processing on 1GB RAM
 
 
 class AudioProcessor:
@@ -194,16 +195,19 @@ class AudioProcessor:
             
             # Get raw audio data
             samples = np.array(audio_segment.get_array_of_samples())
+            sample_rate = audio_segment.frame_rate
+            
+            # Free pydub segment immediately (can be large)
+            del audio_segment
             
             # Normalize to float32 in range [-1, 1]
-            if audio_segment.sample_width == 2:  # 16-bit audio
+            if samples.dtype == np.int16:  # 16-bit audio (most common)
                 samples = samples.astype(np.float32) / 32768.0
-            elif audio_segment.sample_width == 4:  # 32-bit audio
+            elif samples.dtype == np.int32:  # 32-bit audio
                 samples = samples.astype(np.float32) / 2147483648.0
             else:
-                samples = samples.astype(np.float32) / np.max(np.abs(samples))
+                samples = samples.astype(np.float32) / (np.max(np.abs(samples)) + 1e-8)
             
-            sample_rate = audio_segment.frame_rate
             return samples, sample_rate
             
         except Exception as e:
@@ -281,6 +285,7 @@ class AudioProcessor:
         
         # Step 2: Decode MP3 to get raw audio samples
         waveform, sample_rate = self.mp3_to_waveform(audio_bytes)
+        del audio_bytes  # Free raw bytes immediately
         
         # Step 3: Resample to 16kHz if needed
         waveform = self.resample(waveform, sample_rate)

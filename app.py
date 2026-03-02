@@ -9,6 +9,7 @@ print("VoxProof: Starting application...", file=sys.stdout, flush=True)
 
 import asyncio
 import concurrent.futures
+import gc
 import logging
 import os
 from contextlib import asynccontextmanager
@@ -276,6 +277,19 @@ async def lifespan(app: FastAPI):
         )
         # Actually trigger model loading (Wav2Vec2 + classifier weights)
         model.load()
+        
+        # Force garbage collection after loading
+        gc.collect()
+        
+        # Log memory usage after model loading
+        try:
+            import resource
+            mem_mb = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024
+            logger.info(f"✓ Memory usage after model loading: {mem_mb:.0f} MB")
+        except ImportError:
+            # resource module not available on Windows
+            pass
+        
         logger.info("✓ All models pre-loaded and ready")
     except Exception as e:
         logger.error(f"⚠️  Failed to pre-load models: {e}")
@@ -369,8 +383,8 @@ class TimeoutMiddleware:
 app.add_middleware(TimeoutMiddleware, timeout=REQUEST_TIMEOUT)
 
 
-# Thread pool for CPU-intensive operations
-_executor = concurrent.futures.ThreadPoolExecutor(max_workers=2)
+# Thread pool for CPU-intensive operations (1 worker to prevent OOM)
+_executor = concurrent.futures.ThreadPoolExecutor(max_workers=1)
 
 
 # ============================================================================
@@ -471,6 +485,10 @@ async def voice_detection(
                 acoustic_features=features,
                 sample_rate=config.SAMPLE_RATE
             )
+            
+            # Free waveform from memory after inference
+            del waveform
+            gc.collect()
             
             return features, prediction
         
