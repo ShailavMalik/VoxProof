@@ -59,4 +59,5 @@ ENV TOKENIZERS_PARALLELISM=false
 EXPOSE 8000
 
 # Start server - single worker, no reload, memory-optimized
-CMD sh -c "python -m uvicorn app:app --host 0.0.0.0 --port ${PORT:-8000} --timeout-keep-alive 120 --workers 1 --limit-concurrency 2"
+# limit-concurrency raised to 10 so platform health probes don't block real requests
+CMD sh -c "python -m uvicorn app:app --host 0.0.0.0 --port ${PORT:-8000} --timeout-keep-alive 120 --workers 1 --limit-concurrency 10"

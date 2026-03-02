@@ -90,7 +90,7 @@ const features = [
 
 export default function AboutPage() {
   return (
-    <div className="max-w-6xl mx-auto px-4 py-8">
+    <div className="max-w-6xl mx-auto px-4 pt-4 pb-8">
       <motion.div
         initial="hidden"
         animate="visible"

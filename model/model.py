@@ -106,25 +106,12 @@ class Wav2VecEmbedder:
         # Force GC before loading the large model
         gc.collect()
         
-        # Memory-optimized loading:
-        # - low_cpu_mem_usage: loads weights one-by-one (avoids 2x peak)
-        # - torch_dtype=float16: halves model memory (360MB → 180MB)
-        try:
-            self.model = Wav2Vec2Model.from_pretrained(
-                self.model_name,
-                low_cpu_mem_usage=True,
-                torch_dtype=torch.float16,
-            )
-            self._dtype = torch.float16
-            logger.info("  ✓ Wav2Vec2 loaded in float16 (memory optimized)")
-        except Exception as e:
-            logger.warning(f"  ⚠ float16 loading failed, falling back to float32: {e}")
-            self.model = Wav2Vec2Model.from_pretrained(
-                self.model_name,
-                low_cpu_mem_usage=True,
-            )
-            self._dtype = torch.float32
-            logger.info("  ✓ Wav2Vec2 loaded in float32")
+        # Load model exactly like training does — plain from_pretrained()
+        # DO NOT use low_cpu_mem_usage or torch_dtype; they alter weight initialization
+        # via accelerate's meta-device path, producing different embeddings.
+        self.model = Wav2Vec2Model.from_pretrained(self.model_name)
+        self._dtype = torch.float32
+        logger.info("  ✓ Wav2Vec2 loaded (default float32, matches training)")
         
         self.model.eval()
         
@@ -200,13 +187,13 @@ class Wav2VecEmbedder:
             return_tensors="pt", 
             padding=True
         )
-        # Cast input to match model dtype (float16 or float32)
-        input_values = inputs.input_values.to(dtype=self._dtype, device=self.device)
+        # Send input to device (no dtype cast — match training exactly)
+        input_values = inputs.input_values.to(self.device)
         del inputs  # Free processor output immediately
         
-        # Extract embeddings (mean pooling over time)
+        # Extract embeddings (mean pooling over time — matches training)
         outputs = self.model(input_values)
-        embedding = outputs.last_hidden_state.float().mean(dim=1)  # back to float32 for numpy
+        embedding = outputs.last_hidden_state.mean(dim=1)
         
         # Extract result and free GPU/CPU tensors
         result = embedding.cpu().numpy().squeeze()

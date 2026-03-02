@@ -260,7 +260,7 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8">
+    <div className="max-w-4xl mx-auto px-4 pt-4 pb-8">
       <motion.div
         initial="hidden"
         animate="visible"
@@ -271,7 +271,7 @@ export default function DashboardPage() {
         {/* Header */}
         <motion.div variants={fadeInUp} className="text-center mb-12 relative">
           {/* Decorative lines */}
-          <div className="absolute left-0 right-0 top-1/2 flex items-center justify-center gap-4 -z-10">
+          <div className="absolute left-0 right-0 top-10 flex items-center justify-center gap-4 -z-10">
             <motion.div
               className="h-px w-24 bg-gradient-to-r from-transparent to-neon-cyan/50"
               animate={{ opacity: [0.3, 0.7, 0.3] }}
@@ -285,7 +285,7 @@ export default function DashboardPage() {
             />
           </div>
 
-          <h1 className="text-3xl md:text-4xl font-bold mb-4">
+          <h1 className="text-3xl md:text-4xl font-bold mb-10">
             Voice <span className="neon-text">Analysis</span>
           </h1>
           <p className="text-dark-500 dark:text-light-400">
@@ -682,6 +682,114 @@ export default function DashboardPage() {
             </span>
           </motion.button>
         </motion.div>
+
+        {/* Analysis Loading Animation */}
+        <AnimatePresence>
+          {isAnalyzing && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.4 }}
+              className="mb-8 relative">
+              {/* Outer glow */}
+              <motion.div
+                className="absolute -inset-1 bg-gradient-to-r from-neon-cyan/20 via-neon-purple/20 to-neon-pink/20 rounded-2xl blur-md"
+                animate={{ opacity: [0.3, 0.6, 0.3] }}
+                transition={{ duration: 2, repeat: Infinity }}
+              />
+
+              <div className="relative glass-card p-8 overflow-hidden">
+                {/* Corner decorations */}
+                <div className="absolute top-2 left-2 w-6 h-6 border-l-2 border-t-2 border-neon-cyan/40 rounded-tl-lg" />
+                <div className="absolute top-2 right-2 w-6 h-6 border-r-2 border-t-2 border-neon-purple/40 rounded-tr-lg" />
+                <div className="absolute bottom-2 left-2 w-6 h-6 border-l-2 border-b-2 border-neon-purple/40 rounded-bl-lg" />
+                <div className="absolute bottom-2 right-2 w-6 h-6 border-r-2 border-b-2 border-neon-cyan/40 rounded-br-lg" />
+
+                {/* Scanning line */}
+                <motion.div
+                  className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-neon-cyan to-transparent"
+                  animate={{ y: [0, 200, 0] }}
+                  transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
+                />
+
+                <div className="flex flex-col items-center gap-6">
+                  {/* Brain icon with pulse rings */}
+                  <div className="relative">
+                    <motion.div
+                      className="absolute inset-0 rounded-full bg-neon-cyan/20"
+                      animate={{ scale: [1, 2, 1], opacity: [0.4, 0, 0.4] }}
+                      transition={{ duration: 2, repeat: Infinity }}
+                    />
+                    <motion.div
+                      className="absolute inset-0 rounded-full bg-neon-purple/20"
+                      animate={{ scale: [1, 2.5, 1], opacity: [0.3, 0, 0.3] }}
+                      transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}
+                    />
+                    <motion.div
+                      className="relative w-16 h-16 rounded-full bg-gradient-to-br from-neon-cyan/20 to-neon-purple/20 border border-neon-cyan/30 flex items-center justify-center"
+                      animate={{ rotate: [0, 5, -5, 0] }}
+                      transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}>
+                      <Brain className="w-8 h-8 text-neon-cyan" />
+                    </motion.div>
+                  </div>
+
+                  {/* Status text */}
+                  <div className="text-center">
+                    <motion.h3
+                      className="text-lg font-semibold bg-gradient-to-r from-neon-cyan to-neon-purple bg-clip-text text-transparent mb-2"
+                      animate={{ opacity: [0.7, 1, 0.7] }}
+                      transition={{ duration: 1.5, repeat: Infinity }}>
+                      Analyzing Audio
+                    </motion.h3>
+                    <p className="text-sm text-dark-500 dark:text-light-400">
+                      Extracting features & running AI detection model...
+                    </p>
+                  </div>
+
+                  {/* Animated waveform bars */}
+                  <div className="flex items-center gap-1">
+                    {Array.from({ length: 20 }).map((_, i) => (
+                      <motion.div
+                        key={i}
+                        className="w-1 rounded-full bg-gradient-to-t from-neon-cyan to-neon-purple"
+                        animate={{
+                          height: [8, 24 + Math.random() * 16, 8],
+                          opacity: [0.4, 0.9, 0.4],
+                        }}
+                        transition={{
+                          duration: 0.8 + Math.random() * 0.6,
+                          repeat: Infinity,
+                          delay: i * 0.05,
+                          ease: "easeInOut",
+                        }}
+                      />
+                    ))}
+                  </div>
+
+                  {/* Progress dots */}
+                  <div className="flex gap-2">
+                    {[0, 1, 2].map((i) => (
+                      <motion.div
+                        key={i}
+                        className="w-2 h-2 rounded-full bg-neon-cyan"
+                        animate={{
+                          scale: [1, 1.4, 1],
+                          opacity: [0.3, 1, 0.3],
+                        }}
+                        transition={{
+                          duration: 1,
+                          repeat: Infinity,
+                          delay: i * 0.3,
+                        }}
+                      />
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Result Display */}
         <AnimatePresence>

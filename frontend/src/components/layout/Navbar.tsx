@@ -20,9 +20,8 @@ export function Navbar() {
       initial={{ y: -100, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.6, ease: "easeOut" }}
-      className="fixed top-0 left-0 right-0 z-50 px-4 py-4">
-      <div className="max-w-7xl mx-auto">
-        <div className="glass-card px-6 py-3 flex items-center justify-between">
+      className="fixed top-0 left-0 right-0 z-50 glass-card border-b border-white/10 backdrop-blur-xl">
+      <div className="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-3 group">
             <motion.div
@@ -71,7 +70,7 @@ export function Navbar() {
               : <Menu className="w-6 h-6" />}
             </button>
           </div>
-        </div>
+      </div>
 
         {/* Mobile Menu */}
         <motion.div
@@ -82,7 +81,7 @@ export function Navbar() {
           }}
           transition={{ duration: 0.3 }}
           className="md:hidden overflow-hidden">
-          <div className="glass-card mt-2 p-4 flex flex-col gap-2">
+          <div className="max-w-7xl mx-auto px-6 py-4 flex flex-col gap-2 border-t border-white/5">
             {navItems.map((item) => (
               <Link
                 key={item.href}
@@ -98,7 +97,6 @@ export function Navbar() {
             ))}
           </div>
         </motion.div>
-      </div>
     </motion.nav>
   );
 }
