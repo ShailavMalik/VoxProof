@@ -14,7 +14,7 @@ function App() {
       <div className="font-sans antialiased min-h-screen flex flex-col">
         <Background />
         <Navbar />
-        <main className="flex-1 pt-24">
+        <main className="flex-1">
           <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/dashboard" element={<DashboardPage />} />
