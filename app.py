@@ -83,6 +83,10 @@ from audio.processing import get_processor
 from model.model import get_model, create_dummy_weights, load_classifier, predict
 from utils.explain import get_explainer
 
+# Global model readiness flag
+_models_ready = False
+_model_load_error: Optional[str] = None
+
 
 # ============================================================================
 # Configuration
@@ -249,62 +253,78 @@ class ErrorResponse(BaseModel):
 # Application Lifecycle
 # ============================================================================
 
+async def _load_models_background():
+    """
+    Load models in a background task so the server can start serving
+    healthcheck requests immediately (required for Railway deployments).
+    """
+    global _models_ready, _model_load_error
+    
+    try:
+        # Create dummy weights if not exists (for demo purposes)
+        if not os.path.exists(config.MODEL_PATH):
+            logger.warning("No classifier weights found. Creating dummy weights for demo...")
+            create_dummy_weights(config.MODEL_PATH)
+        
+        logger.info("Background model loading started...")
+        
+        # Run the blocking model load in a thread to not block the event loop
+        loop = asyncio.get_event_loop()
+        await loop.run_in_executor(None, _sync_load_models)
+        
+        _models_ready = True
+        logger.info("All models loaded and ready")
+    except Exception as e:
+        _model_load_error = str(e)
+        logger.error(f"Failed to load models: {e}", exc_info=True)
+
+
+def _sync_load_models():
+    """Synchronous model loading (runs in thread pool)."""
+    processor = get_processor(sample_rate=config.SAMPLE_RATE)
+    model = get_model(
+        classifier_path=config.MODEL_PATH,
+        wav2vec_model_name=config.WAV2VEC_MODEL
+    )
+    model.load()
+    gc.collect()
+    
+    # Log memory usage
+    try:
+        import resource
+        mem_mb = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024
+        logger.info(f"Memory usage after model loading: {mem_mb:.0f} MB")
+    except ImportError:
+        pass
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """
     Application lifespan handler.
-    Pre-loads models on startup to avoid timeout on first request.
+    Starts model loading in the background so the server can respond
+    to healthchecks immediately while models are still loading.
     """
     if not IS_PRODUCTION:
         logger.info("\n" + "=" * 70)
-        logger.info("🎙️  VoxProof API - AI Voice Detection System")
+        logger.info("VoxProof API - AI Voice Detection System")
         logger.info("=" * 70)
     logger.info("Starting server...")
     
-    # Create dummy weights if not exists (for demo purposes)
-    if not os.path.exists(config.MODEL_PATH):
-        logger.warning("⚠️  No classifier weights found. Creating dummy weights for demo...")
-        logger.warning("⚠️  Run 'python train.py' to train with real data!")
-        create_dummy_weights(config.MODEL_PATH)
-    
-    # Pre-load models on startup to prevent timeout on first request
-    try:
-        logger.info("Pre-loading models on startup (this may take a minute)...")
-        processor = get_processor(sample_rate=config.SAMPLE_RATE)
-        model = get_model(
-            classifier_path=config.MODEL_PATH,
-            wav2vec_model_name=config.WAV2VEC_MODEL
-        )
-        # Actually trigger model loading (Wav2Vec2 + classifier weights)
-        model.load()
-        
-        # Force garbage collection after loading
-        gc.collect()
-        
-        # Log memory usage after model loading
-        try:
-            import resource
-            mem_mb = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024
-            logger.info(f"✓ Memory usage after model loading: {mem_mb:.0f} MB")
-        except ImportError:
-            # resource module not available on Windows
-            pass
-        
-        logger.info("✓ All models pre-loaded and ready")
-    except Exception as e:
-        logger.error(f"⚠️  Failed to pre-load models: {e}")
-        logger.error("⚠️  Models will attempt to load on first request (may timeout)")
+    # Start model loading as a background task — server starts NOW
+    # This allows /health to respond while models load
+    asyncio.create_task(_load_models_background())
     
     if IS_PRODUCTION:
-        logger.info("VoxProof API Started - Models pre-loaded")
+        logger.info("VoxProof API started — models loading in background")
     else:
         logger.info("=" * 70)
-        logger.info("✅ VoxProof API Started!")
-        logger.info("🔑 API Key: " + ("Configured ✓" if config.API_KEY else "NOT SET ✗"))
-        logger.info(f"🤖 Model: {config.MODEL_PATH}")
-        logger.info(f"🎵 Sample Rate: {config.SAMPLE_RATE} Hz")
-        logger.info(f"📡 Access the API at: http://localhost:8000")
-        logger.info(f"📚 API Docs: http://localhost:8000/docs")
+        logger.info("VoxProof API Started!")
+        logger.info("API Key: " + ("Configured" if config.API_KEY else "NOT SET"))
+        logger.info(f"Model: {config.MODEL_PATH}")
+        logger.info(f"Sample Rate: {config.SAMPLE_RATE} Hz")
+        logger.info(f"Access the API at: http://localhost:8000")
+        logger.info(f"API Docs: http://localhost:8000/docs")
         logger.info("=" * 70 + "\n")
     
     yield  # Application runs here
@@ -418,10 +438,11 @@ async def root():
 
 @app.get("/health", tags=["Health"])
 async def health_check():
-    """Detailed health check endpoint."""
+    """Detailed health check endpoint. Responds immediately even during model loading."""
     return {
         "status": "healthy",
-        "models_loaded": True,
+        "models_ready": _models_ready,
+        "models_error": _model_load_error,
         "sample_rate": config.SAMPLE_RATE
     }
 
@@ -460,6 +481,18 @@ async def voice_detection(
     logger.info(f"Request received - Language: {request.language}, Request ID: {request_id}", extra=extra)
     
     try:
+        # Ensure models are loaded before processing requests
+        if not _models_ready:
+            if _model_load_error:
+                raise HTTPException(
+                    status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                    detail=f"Models failed to load: {_model_load_error}"
+                )
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="Models are still loading. Please retry in a few seconds."
+            )
+        
         # Get singletons
         processor = get_processor(sample_rate=config.SAMPLE_RATE)
         model = get_model(
