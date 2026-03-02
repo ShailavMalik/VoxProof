@@ -14,6 +14,8 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir --user -r requirements.txt
 
 # Pre-download Wav2Vec2 model to cache (reduces cold start time)
+# Set HF_HUB_CACHE so builder and runtime use the same cache path
+ENV HF_HUB_CACHE=/root/.cache/huggingface/hub
 RUN python -c "from transformers import Wav2Vec2Model, Wav2Vec2Processor; Wav2Vec2Processor.from_pretrained('facebook/wav2vec2-base-960h'); Wav2Vec2Model.from_pretrained('facebook/wav2vec2-base-960h')"
 
 # Stage 2: Runtime (minimal)
@@ -41,7 +43,8 @@ COPY utils/ ./utils/
 
 # Environment
 ENV PYTHONUNBUFFERED=1
-ENV TRANSFORMERS_CACHE=/root/.cache/huggingface
+# Use HF_HUB_CACHE (not deprecated TRANSFORMERS_CACHE) and match builder path
+ENV HF_HUB_CACHE=/root/.cache/huggingface/hub
 ENV PRODUCTION=true
 
 # Memory optimization for 1GB RAM environments

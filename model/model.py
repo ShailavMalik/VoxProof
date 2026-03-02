@@ -83,9 +83,17 @@ class Wav2VecEmbedder:
         self.processor = None  # Lazy loaded
         self.model = None  # Lazy loaded
         self._loaded = False
+        self._dtype = torch.float32  # Will be set to float16 after loading
         
     def load(self) -> None:
-        """Load the pretrained model with INT8 quantization for memory efficiency."""
+        """
+        Load the pretrained model with aggressive memory optimizations.
+        
+        Key optimizations for Railway/constrained environments:
+        - float16: halves model memory (~360MB → ~180MB)
+        - low_cpu_mem_usage: loads weights incrementally (avoids 2x peak memory)
+        - No INT8 quantization: avoids temporary 2x memory spike during conversion
+        """
         if self._loaded:
             return
         
@@ -94,30 +102,46 @@ class Wav2VecEmbedder:
             
         logger.info(f"Loading Wav2Vec2 embedder: {self.model_name}")
         self.processor = Wav2Vec2Processor.from_pretrained(self.model_name)
-        self.model = Wav2Vec2Model.from_pretrained(self.model_name)
-        self.model.to(self.device)
+        
+        # Force GC before loading the large model
+        gc.collect()
+        
+        # Memory-optimized loading:
+        # - low_cpu_mem_usage: loads weights one-by-one (avoids 2x peak)
+        # - torch_dtype=float16: halves model memory (360MB → 180MB)
+        try:
+            self.model = Wav2Vec2Model.from_pretrained(
+                self.model_name,
+                low_cpu_mem_usage=True,
+                torch_dtype=torch.float16,
+            )
+            self._dtype = torch.float16
+            logger.info("  ✓ Wav2Vec2 loaded in float16 (memory optimized)")
+        except Exception as e:
+            logger.warning(f"  ⚠ float16 loading failed, falling back to float32: {e}")
+            self.model = Wav2Vec2Model.from_pretrained(
+                self.model_name,
+                low_cpu_mem_usage=True,
+            )
+            self._dtype = torch.float32
+            logger.info("  ✓ Wav2Vec2 loaded in float32")
+        
         self.model.eval()
         
         # Freeze all parameters - we only extract embeddings
         for param in self.model.parameters():
             param.requires_grad = False
         
-        # INT8 dynamic quantization — reduces model from ~360MB to ~90MB
-        try:
-            self.model = torch.quantization.quantize_dynamic(
-                self.model,
-                {torch.nn.Linear},
-                dtype=torch.qint8
-            )
-            logger.info("  ✓ Wav2Vec2 quantized to INT8 (memory optimized)")
-        except Exception as e:
-            logger.warning(f"  ⚠ INT8 quantization failed, using FP32: {e}")
+        # NOTE: Skipping INT8 quantization intentionally.
+        # Quantization requires temporarily holding BOTH the original and quantized
+        # model in memory (~720MB peak), which causes OOM on constrained instances.
+        # float16 already provides ~50% memory reduction.
         
         # Force garbage collection after loading
         gc.collect()
             
         self._loaded = True
-        logger.info(f"  ✓ Wav2Vec2 loaded on {self.device}")
+        logger.info(f"  ✓ Wav2Vec2 ready on {self.device} (dtype={self._dtype})")
         
     @torch.inference_mode()
     def extract_embedding(self, waveform: np.ndarray, sample_rate: int = 16000) -> np.ndarray:
@@ -176,12 +200,13 @@ class Wav2VecEmbedder:
             return_tensors="pt", 
             padding=True
         )
-        input_values = inputs.input_values.to(self.device)
+        # Cast input to match model dtype (float16 or float32)
+        input_values = inputs.input_values.to(dtype=self._dtype, device=self.device)
         del inputs  # Free processor output immediately
         
         # Extract embeddings (mean pooling over time)
         outputs = self.model(input_values)
-        embedding = outputs.last_hidden_state.mean(dim=1)
+        embedding = outputs.last_hidden_state.float().mean(dim=1)  # back to float32 for numpy
         
         # Extract result and free GPU/CPU tensors
         result = embedding.cpu().numpy().squeeze()
