@@ -3,7 +3,7 @@
 > **Detect AI-generated voices in real-time** - Built for the AI Impact Buildathon 2026
 
 [![Live Frontend](https://img.shields.io/badge/Frontend-Vercel-black)](https://voxproof.vercel.app)
-[![Live API](https://img.shields.io/badge/API-Railway-blueviolet)](https://voxproof-backend.up.railway.app)
+[![Live API](https://img.shields.io/badge/API-HuggingFace%20Spaces-orange)](https://shailavmalik-voxproof.hf.space)
 [![Python 3.11](https://img.shields.io/badge/Python-3.11-blue)](https://python.org)
 [![Vite](https://img.shields.io/badge/Vite-5-646CFF)](https://vitejs.dev)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.110-green)](https://fastapi.tiangolo.com)
@@ -16,8 +16,9 @@
 | Resource              | URL                                                                                      |
 | --------------------- | ---------------------------------------------------------------------------------------- |
 | **Frontend App**      | [https://voxproof.vercel.app](https://voxproof.vercel.app)                               |
-| **API Documentation** | [https://voxproof-backend.up.railway.app/docs](https://voxproof-backend.up.railway.app/docs)     |
-| **Health Check**      | [https://voxproof-backend.up.railway.app/health](https://voxproof-backend.up.railway.app/health) |
+| **API Base**          | [https://shailavmalik-voxproof.hf.space](https://shailavmalik-voxproof.hf.space)                 |
+| **API Documentation** | [https://shailavmalik-voxproof.hf.space/docs](https://shailavmalik-voxproof.hf.space/docs)     |
+| **Health Check**      | [https://shailavmalik-voxproof.hf.space/health](https://shailavmalik-voxproof.hf.space/health) |
 
 > **Try it out:** Don't have audio? The dashboard includes **sample audio clips** (both AI-generated and real human voices) you can play and analyze instantly.
 
@@ -138,10 +139,8 @@ VoxProof/
 │   ├── human/                      # Real voice training samples
 │   └── ai/                         # AI-generated training samples
 ├── Dockerfile                      # Backend container (multi-stage)
-├── railway.json                    # Railway deployment config
-├── nixpacks.toml                   # Nixpacks deployment config
-├── render.yaml                     # Render deployment config
-└── requirements.txt                # Python dependencies
+├── requirements.txt                # Python dependencies
+└── HUGGINGFACE_SPACES_BACKEND_SETUP.md  # HF Spaces deployment guide
 ```
 
 ---
@@ -265,7 +264,7 @@ _Flexible input:_ `en`, `eng`, `english`, `English` (and similar for other langu
 BASE64=$(base64 -w 0 audio.mp3)
 
 # Test API
-curl -X POST "https://voxproof-api.up.railway.app/api/voice-detection" \
+curl -X POST "https://shailavmalik-voxproof.hf.space/api/voice-detection" \
   -H "x-api-key: YOUR_API_KEY" \
   -H "Content-Type: application/json" \
   -d "{\"language\":\"English\",\"audioFormat\":\"mp3\",\"audioBase64\":\"$BASE64\"}"
@@ -287,7 +286,7 @@ with open("test_audio.mp3", "rb") as f:
 
 # Send request
 response = requests.post(
-    "https://voxproof-api.up.railway.app/api/voice-detection",
+    "https://shailavmalik-voxproof.hf.space/api/voice-detection",
     headers={
         "x-api-key": os.getenv("API_KEY"),
         "Content-Type": "application/json"
@@ -369,7 +368,7 @@ python train_fast.py
 | **Speech Model**     | Wav2Vec2 (HuggingFace)         |
 | **Audio Processing** | librosa + pydub + FFmpeg       |
 | **Frontend Hosting** | Vercel                         |
-| **Backend Hosting**  | Railway / Render               |
+| **Backend Hosting**  | **Hugging Face Spaces (Docker)**|
 
 ---
 
@@ -390,30 +389,30 @@ Set environment variables in Vercel Dashboard:
 
 Or connect your GitHub repo for automatic deployments.
 
-### Backend (Railway)
+### Backend (Hugging Face Spaces - Docker)
 
-1. Create a new project on [Railway](https://railway.app)
-2. Connect your GitHub repository
-3. Railway auto-detects the `Dockerfile` (or `nixpacks.toml`)
-4. Add environment variables:
+**Live:** [https://shailavmalik-voxproof.hf.space](https://shailavmalik-voxproof.hf.space)
+
+1. Create a new Space on [Hugging Face](https://huggingface.co/new-space) with **Docker SDK**
+2. Clone the Space repo and push your backend code:
+   ```bash
+   git clone https://huggingface.co/spaces/<username>/<space-name>
+   cd <space-name>
+   # Copy app.py, Dockerfile, requirements.txt, audio/, model/, utils/
+   git add . && git commit -m "Deploy VoxProof" && git push
+   ```
+3. Set Space Secrets (Settings → Variables and secrets):
    - `API_KEY`: Your secret API key
    - `PRODUCTION`: `true`
-5. Deploy — Railway will build and run the container
+4. Space auto-builds Docker image and deploys
 
-The `railway.json` configures:
+**Benefits over Railway/Render:**
+- More free RAM (HF allocates generously for open projects)
+- No cold-start penalty
+- Built-in git integration
+- Perfect for ML model serving
 
-- Dockerfile-based builds
-- Health check at `/health` with 600s timeout
-- Auto-restart on failure
-
-### Backend (Render)
-
-1. Create a new **Web Service** on [Render](https://render.com)
-2. Connect your GitHub repository
-3. Select **Docker** environment (uses the `Dockerfile`)
-4. Add environment variables:
-   - `API_KEY`: Your secret API key
-   - `PRODUCTION`: `true`
+See [HUGGINGFACE_SPACES_BACKEND_SETUP.md](HUGGINGFACE_SPACES_BACKEND_SETUP.md) for detailed instructions.
 
 ### Docker (Local)
 
