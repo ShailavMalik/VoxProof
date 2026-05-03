@@ -6,7 +6,6 @@ import {
   Waves,
   Fingerprint,
   Code,
-  Award,
   Radio,
   TrendingUp,
   Database,
