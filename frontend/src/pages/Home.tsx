@@ -38,7 +38,7 @@ export default function HomePage() {
           variants={staggerContainer}
           className="max-w-5xl mx-auto text-center">
           {/* Badge */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-8">
+          <div className="flex justify-center mb-8">
             <motion.div
               variants={fadeInUp}
               className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-card">
@@ -48,18 +48,6 @@ export default function HomePage() {
               </span>
               <span className="text-sm text-dark-600 dark:text-light-300">
                 AI Voice Detection Platform
-              </span>
-            </motion.div>
-
-            <motion.div
-              variants={fadeInUp}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-card bg-gradient-to-r from-neon-purple/10 to-neon-pink/10 border border-neon-purple/20">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-pulse absolute inline-flex h-full w-full rounded-full bg-neon-purple opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-neon-purple"></span>
-              </span>
-              <span className="text-sm text-neon-purple dark:text-neon-pink font-medium">
-                AI Impact Buildathon 2026
               </span>
             </motion.div>
           </div>

@@ -21,12 +21,7 @@ export function Footer() {
           <div className="flex items-center gap-2">
             <Shield className="w-5 h-5 text-neon-cyan" />
             <span className="text-sm font-medium text-dark-600 dark:text-light-300">
-              VoxProof by{" "}
-              <Link
-                to="/about#team"
-                className="text-neon-cyan hover:text-neon-purple transition-colors font-semibold">
-                Meerut Coders
-              </Link>
+              VoxProof by Shaili & Anushka
             </span>
           </div>
 

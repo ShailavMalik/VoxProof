@@ -2,8 +2,6 @@ import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import {
   Shield,
-  Linkedin,
-  ExternalLink,
   Brain,
   Waves,
   Fingerprint,
@@ -33,33 +31,6 @@ const staggerContainer = {
     },
   },
 };
-
-const teamMembers = [
-  {
-    name: "Ritika Sharma",
-    linkedin: "https://www.linkedin.com/in/ritika-sharma-012979398/",
-    gradient: "from-neon-purple to-neon-pink",
-    image: "/img/ritika.png",
-  },
-  {
-    name: "Shailav Malik",
-    linkedin: "https://linkedin.com/in/shailavmalik",
-    gradient: "from-neon-cyan to-neon-blue",
-    image: "/img/shailav.png",
-  },
-  {
-    name: "Sarthak Vats",
-    linkedin: "https://www.linkedin.com/in/sarthak-vats-301a3a358/",
-    gradient: "from-neon-cyan to-neon-purple",
-    image: "/img/sarthak.png",
-  },
-  {
-    name: "Tarun Kumar",
-    linkedin: "https://www.linkedin.com/in/tarun-kumar-7238b1367/",
-    gradient: "from-neon-pink to-neon-cyan",
-    image: "/img/tarun.png",
-  },
-];
 
 const features = [
   {
@@ -113,71 +84,11 @@ export default function AboutPage() {
           </p>
         </motion.div>
 
-        {/* Team Section */}
-        <motion.div variants={fadeInUp} className="mb-16">
-          <div className="text-center mb-12">
-            <h2 className="text-2xl md:text-3xl font-bold mb-4">
-              Meet <span className="neon-text">Meerut Coders</span>
-            </h2>
-            <p className="text-dark-500 dark:text-light-400">
-              The talented team behind VoxProof
-            </p>
-          </div>
-
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {teamMembers.map((member) => (
-              <motion.div
-                key={member.name}
-                variants={fadeInUp}
-                whileHover={{ y: -5 }}
-                className="glass-card-hover p-6 text-center group">
-                <div className="relative mb-6">
-                  <div className="relative w-24 h-24 mx-auto rounded-full overflow-hidden ring-2 ring-transparent group-hover:ring-neon-cyan/50 shadow-lg group-hover:shadow-neon-glow transition-all duration-300">
-                    <div
-                      className={`absolute -inset-0.5 bg-gradient-to-br ${member.gradient} rounded-full opacity-0 group-hover:opacity-100 transition-opacity blur-sm`}
-                    />
-                    <img
-                      src={member.image}
-                      alt={member.name}
-                      className="relative w-full h-full object-cover rounded-full"
-                    />
-                  </div>
-                  <motion.div
-                    className={`absolute inset-0 rounded-full bg-gradient-to-br ${member.gradient} blur-xl opacity-0 group-hover:opacity-30 transition-opacity`}
-                  />
-                </div>
-
-                <h3 className="font-semibold text-lg mb-4">{member.name}</h3>
-
-                <motion.a
-                  href={member.linkedin}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-lg bg-gradient-to-r from-neon-cyan/20 to-neon-cyan/10 border-2 border-neon-cyan hover:from-neon-cyan/30 hover:to-neon-cyan/20 hover:border-neon-purple transition-all duration-300 group">
-                  <Linkedin className="w-5 h-5 text-neon-cyan group-hover:text-neon-purple transition-colors" />
-                  <span className="text-sm font-semibold text-neon-cyan group-hover:text-neon-purple transition-colors">
-                    LinkedIn
-                  </span>
-                  <ExternalLink className="w-4 h-4 text-neon-cyan group-hover:text-neon-purple transition-colors opacity-70 group-hover:opacity-100" />
-                </motion.a>
-              </motion.div>
-            ))}
-          </div>
-        </motion.div>
-
         {/* Project Info */}
         <motion.div variants={fadeInUp} className="mb-16">
           <div className="glass-card p-8 md:p-12">
             <div className="flex flex-col md:flex-row items-center gap-8">
               <div className="flex-1">
-                <div className="flex items-center gap-2 mb-4">
-                  <Award className="w-5 h-5 text-neon-cyan" />
-                  <span className="text-sm font-medium text-neon-cyan">
-                    AI Impact Buildathon 2026
-                  </span>
-                </div>
                 <h2 className="text-2xl md:text-3xl font-bold mb-4">
                   Detecting AI Voices with AI
                 </h2>
